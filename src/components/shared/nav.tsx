@@ -1,14 +1,7 @@
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { BrandMark, LumenIcon, initials, avatarTone } from "./brand"
-
-// Base UI's Menu.Trigger adds aria/data attributes only on the client,
-// causing a hydration mismatch. Render the whole user menu client-only.
-const UserMenu = dynamic(
-  () => import("./user-menu").then((m) => ({ default: m.UserMenu })),
-  { ssr: false }
-)
+import { UserMenuClient } from "./user-menu-client"
 
 export async function Nav({ userId }: { userId: string }) {
   const supabase = await createClient()
@@ -120,7 +113,7 @@ export async function Nav({ userId }: { userId: string }) {
 
           <div style={{ width: 1, height: 22, background: "var(--hairline)", margin: "0 6px" }} />
 
-          <UserMenu
+          <UserMenuClient
             name={profile?.name ?? ""}
             email={profile?.email ?? ""}
             avatarUrl={profile?.avatar_url ?? null}
