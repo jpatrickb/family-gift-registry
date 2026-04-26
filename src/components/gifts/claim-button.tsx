@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { LumenIcon } from "@/components/shared/brand"
 import type { GiftClaim } from "@/types"
@@ -12,6 +13,7 @@ interface ClaimButtonProps {
 }
 
 export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsMyClaim }: ClaimButtonProps) {
+  const router = useRouter()
   const [claim, setClaim] = useState<GiftClaim | null>(initialClaim)
   const [loading, setLoading] = useState(false)
   const [isMyClaim, setIsMyClaim] = useState(initialIsMyClaim)
@@ -30,6 +32,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
       setClaim(newClaim)
       setIsMyClaim(true)
       toast.success("Gift claimed!")
+      router.refresh()
     }
     setLoading(false)
   }
@@ -46,6 +49,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
     } else {
       setClaim((prev) => (prev ? { ...prev, status: "purchased" } : prev))
       toast.success("Marked as purchased!")
+      router.refresh()
     }
     setLoading(false)
   }
@@ -59,6 +63,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
       setClaim(null)
       setIsMyClaim(false)
       toast.success("Unclaimed")
+      router.refresh()
     }
     setLoading(false)
   }
@@ -74,6 +79,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
       toast.error("Failed to undo")
     } else {
       setClaim((prev) => (prev ? { ...prev, status: "claimed" } : prev))
+      router.refresh()
     }
     setLoading(false)
   }
