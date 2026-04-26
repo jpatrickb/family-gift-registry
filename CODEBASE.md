@@ -182,6 +182,14 @@ Route groups:
 
 ---
 
+## Testing
+
+End-to-end test plan: [`tests/test-plan.md`](./tests/test-plan.md)
+
+Covers 8 sections across ~35 scenarios: auth, family management, invite flows, gift CRUD, gift claiming (including surprise-preservation verification), multi-family RLS isolation, navigation, and edge cases. Designed for execution by an AI agent using Playwright MCP tools. No automated test runner is wired up yet — tests are run on demand by sending an agent to `tests/test-plan.md`.
+
+---
+
 ## Planned / future features
 
 - Chrome extension to scrape gift details from product pages (schema has `source` and `external_id` columns ready)
