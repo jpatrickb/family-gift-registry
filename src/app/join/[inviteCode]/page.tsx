@@ -91,8 +91,7 @@ export default async function JoinPage({ params }: Params) {
         <div>
           <h1 className="text-2xl font-bold">Join {family.name}</h1>
           <p className="text-gray-600 mt-2">
-            You&apos;ve been invited to join <strong>{family.name}</strong> on Gift
-            Registry.
+            You&apos;ve been invited to join <strong>{family.name}</strong> on Lumen List.
           </p>
         </div>
 

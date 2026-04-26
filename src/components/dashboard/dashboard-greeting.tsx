@@ -14,7 +14,8 @@ export function DashboardGreeting({ firstName }: DashboardGreetingProps) {
   const hour = new Date().getHours()
 
   return (
-    <h1 className="t-display" style={{ margin: 0 }}>
+    // suppressHydrationWarning: server uses UTC, client uses local timezone — intentional mismatch
+    <h1 className="t-display" style={{ margin: 0 }} suppressHydrationWarning>
       {greetingByHour(hour)},{" "}
       <em style={{ fontStyle: "italic", color: "oklch(0.40 0.16 285)" }}>{firstName}</em>.
     </h1>

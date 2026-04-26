@@ -1,6 +1,6 @@
 "use client"
 
-import { useOptimistic, useState, useTransition } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { LumenIcon } from "@/components/shared/brand"
 import type { GiftClaim } from "@/types"
@@ -11,34 +11,23 @@ interface ClaimButtonProps {
   isMyClaim: boolean
 }
 
-type ClaimState = {
-  claim: GiftClaim | null
-}
-
 export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsMyClaim }: ClaimButtonProps) {
-  const [, startTransition] = useTransition()
-  const [optimisticState, setOptimistic] = useOptimistic<ClaimState>({ claim: initialClaim })
+  const [claim, setClaim] = useState<GiftClaim | null>(initialClaim)
   const [loading, setLoading] = useState(false)
   const [isMyClaim, setIsMyClaim] = useState(initialIsMyClaim)
 
-  const claim = optimisticState.claim
-
   async function handleClaim() {
     setLoading(true)
-    startTransition(() => {
-      setOptimistic({ claim: { id: "temp", gift_id: giftId, claimed_by: "", status: "claimed", created_at: "", updated_at: "" } })
-    })
     const res = await fetch(`/api/gifts/${giftId}/claim`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "claimed" }),
     })
     if (!res.ok) {
-      startTransition(() => setOptimistic({ claim: initialClaim }))
       toast.error("Failed to claim gift")
     } else {
       const { claim: newClaim } = await res.json()
-      startTransition(() => setOptimistic({ claim: newClaim }))
+      setClaim(newClaim)
       setIsMyClaim(true)
       toast.success("Gift claimed!")
     }
@@ -47,18 +36,15 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
 
   async function handleMarkPurchased() {
     setLoading(true)
-    startTransition(() => {
-      setOptimistic({ claim: { ...claim!, status: "purchased" } })
-    })
     const res = await fetch(`/api/gifts/${giftId}/claim`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "purchased" }),
     })
     if (!res.ok) {
-      startTransition(() => setOptimistic({ claim: initialClaim }))
       toast.error("Failed to update")
     } else {
+      setClaim((prev) => (prev ? { ...prev, status: "purchased" } : prev))
       toast.success("Marked as purchased!")
     }
     setLoading(false)
@@ -66,12 +52,11 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
 
   async function handleUnclaim() {
     setLoading(true)
-    startTransition(() => setOptimistic({ claim: null }))
     const res = await fetch(`/api/gifts/${giftId}/claim`, { method: "DELETE" })
     if (!res.ok) {
-      startTransition(() => setOptimistic({ claim: initialClaim }))
       toast.error("Failed to unclaim")
     } else {
+      setClaim(null)
       setIsMyClaim(false)
       toast.success("Unclaimed")
     }
@@ -80,17 +65,15 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
 
   async function handleUndo() {
     setLoading(true)
-    startTransition(() => {
-      setOptimistic({ claim: { ...claim!, status: "claimed" } })
-    })
     const res = await fetch(`/api/gifts/${giftId}/claim`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "claimed" }),
     })
     if (!res.ok) {
-      startTransition(() => setOptimistic({ claim: initialClaim }))
       toast.error("Failed to undo")
+    } else {
+      setClaim((prev) => (prev ? { ...prev, status: "claimed" } : prev))
     }
     setLoading(false)
   }
