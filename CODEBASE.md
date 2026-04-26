@@ -196,6 +196,7 @@ Route groups:
 | `RESEND_API_KEY` | Email invite sending |
 | `RESEND_FROM_EMAIL` | Resend sender identity for app emails |
 | `NEXT_PUBLIC_APP_URL` | Invite link generation |
+| `AUTH_DEBUG` | Optional server-side auth/invite diagnostics in logs |
 
 ---
 

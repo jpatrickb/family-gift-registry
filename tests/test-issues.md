@@ -136,6 +136,12 @@
 - **T-AUTH-04 Account A:** `jpatrickbeall@gmail.com` now signs in successfully and lands on `/dashboard`.
 - **T-AUTH-04 Account B:** `patrickbeal@techforceadvisors.com` now signs in successfully and lands on `/dashboard`.
 
+### T-FAM-03 / T-FAM-04 join-link fix retest
+- **URL retested:** `https://lumenlist.app/join/e0e6018fd8c2`
+- **Expected:** Valid join page for existing family invite code.
+- **Observed:** Still renders `Invalid link` and `This invite link doesn't exist.`
+- **Result:** Fix not yet effective in production for this invite-code path.
+
 ### T-FAM-01 - Create a family (post profile-backfill + create_family hardening)
 - **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
 - **Expected:** Submit redirects to `/families/[id]` and creates family.

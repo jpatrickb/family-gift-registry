@@ -3,11 +3,18 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 type Params = { params: Promise<{ inviteCode: string }> }
+const authDebugEnabled = process.env.AUTH_DEBUG === "true"
+
+function logJoinApiDebug(event: string, data: Record<string, unknown>) {
+  if (!authDebugEnabled) return
+  console.error("[join-api]", event, data)
+}
 
 export async function POST(_: Request, { params }: Params) {
   const { inviteCode: inviteCodeRaw } = await params
   const inviteCode = inviteCodeRaw.trim().toLowerCase()
   if (!/^[a-z0-9]{12}$/.test(inviteCode)) {
+    logJoinApiDebug("invalid-code-format", { inviteCode })
     return NextResponse.json({ error: "Invalid invite link" }, { status: 404 })
   }
   const supabase = await createClient()
@@ -26,6 +33,18 @@ export async function POST(_: Request, { params }: Params) {
   const family = familyRaw as { id: string; name: string } | null
 
   if (familyError || !family) {
+    logJoinApiDebug("lookup-failed", {
+      inviteCode,
+      familyFound: Boolean(family),
+      code: familyError?.code,
+      message: familyError?.message,
+      details: familyError?.details,
+      hint: familyError?.hint,
+      hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+      supabaseHost: process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+        : null,
+    })
     return NextResponse.json({ error: "Invalid invite link" }, { status: 404 })
   }
 

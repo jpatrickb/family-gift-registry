@@ -4,6 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin"
 import { JoinFamilyButton } from "@/components/family/join-family-button"
 
 type Params = { params: Promise<{ inviteCode: string }> }
+const authDebugEnabled = process.env.AUTH_DEBUG === "true"
+
+function logJoinDebug(event: string, data: Record<string, unknown>) {
+  if (!authDebugEnabled) return
+  console.error("[join-page]", event, data)
+}
 
 export default async function JoinPage({ params }: Params) {
   const { inviteCode: inviteCodeRaw } = await params
@@ -20,10 +26,33 @@ export default async function JoinPage({ params }: Params) {
       .maybeSingle()
     if (error) {
       lookupFailed = true
+      logJoinDebug("lookup-error", {
+        inviteCode,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+      })
     }
     family = familyRaw as { id: string; name: string } | null
+    logJoinDebug("lookup-result", {
+      inviteCode,
+      isValidCodeFormat,
+      familyFound: Boolean(family),
+      supabaseHost: process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+        : null,
+      hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    })
   } catch {
     lookupFailed = true
+    logJoinDebug("lookup-exception", {
+      inviteCode,
+      hasServiceRoleKey: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+      hasSupabaseUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    })
   }
 
   if (!family) {
