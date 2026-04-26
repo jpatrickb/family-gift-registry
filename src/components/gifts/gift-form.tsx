@@ -15,11 +15,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import type { Family, Gift } from "@/types"
+import type { Gift } from "@/types"
 import { giftSchema, type GiftInput } from "@/lib/validations"
 
 interface GiftFormProps {
-  families: Family[]
+  families: { id: string; name: string }[]
   gift?: Gift
 }
 

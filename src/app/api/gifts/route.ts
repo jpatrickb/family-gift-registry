@@ -13,24 +13,29 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  let query = supabase.from("gifts").select("*")
+  let giftsData, giftsError
 
   if (userId && userId !== user.id) {
     // Viewing someone else's gifts — include claim data
-    query = supabase
+    let q = supabase
       .from("gifts")
       .select("*, gift_claims(*)")
       .eq("owner_id", userId)
-    if (familyId) query = query.eq("family_id", familyId)
+    if (familyId) q = q.eq("family_id", familyId)
+    const result = await q.order("sort_order", { ascending: true })
+    giftsData = result.data
+    giftsError = result.error
   } else {
     // Viewing own gifts — no claim data
-    query = query.eq("owner_id", user.id)
-    if (familyId) query = query.eq("family_id", familyId)
+    let q = supabase.from("gifts").select("*").eq("owner_id", user.id)
+    if (familyId) q = q.eq("family_id", familyId)
+    const result = await q.order("sort_order", { ascending: true })
+    giftsData = result.data
+    giftsError = result.error
   }
 
-  const { data: gifts, error } = await query.order("sort_order", {
-    ascending: true,
-  })
+  const gifts = giftsData
+  const error = giftsError
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
