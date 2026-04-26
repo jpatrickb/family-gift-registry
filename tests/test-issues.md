@@ -61,3 +61,20 @@
 - **Expected:** Families listing/hub route should render normally for authenticated user.
 - **Observed:** Route renders generic error UI with only `Show Details` and `Reload` buttons.
 - **Impact:** Blocks family settings/invite/join/member and all multi-user claim tests in Sections 2, 4, 5, and 7.
+
+### T-FAM-01 - Create a family (retest after latest fixes)
+- **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
+- **Expected:** Submit redirects to `/families/[id]` and family is created.
+- **Observed:** Submit stays on `/families/new` and now shows explicit error alert: `infinite recursion detected in policy for relation "family_members"`.
+- **Impact:** Family creation remains blocked, which still prevents end-to-end completion of Sections 2, 4, 5, and 7.
+
+### Regression retest status (now passing)
+- **T-NAV-03 greeting:** `/dashboard` now shows `Good afternoon , Patrick Beal .` (name/time-of-day issue appears fixed).
+- **T-NAV-04 account content:** `/account` now shows name and email (`Patrick Beal`, `jpatrickbeal@gmail.com`).
+- **T-FAM-02 route rendering:** `/families` route now renders its normal page UI (no generic crash UI).
+- **T-INV-04 invalid invite token:** `/invite/thisisaninvalidtoken` now shows friendly error page (`Invite not found`).
+
+### T-EDGE-01 - 404 page (latest retest)
+- **URL:** `https://family-gift-registry-zeta.vercel.app/this-page-does-not-exist`
+- **Expected:** Custom/standard 404 page.
+- **Observed:** Still renders generic error UI with `Show Details` and `Reload` buttons while authenticated.

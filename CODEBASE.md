@@ -158,6 +158,7 @@ Route groups:
 | `src/types/database.types.ts` | **Generated** — run `npx supabase gen types typescript` after schema changes |
 | `src/types/index.ts` | Type aliases (`Gift`, `Profile`, etc.) |
 | `supabase/migrations/0001_initial_schema.sql` | Full DB schema, RLS policies, triggers |
+| `supabase/migrations/0002_fix_family_members_rls_recursion.sql` | Replaces recursive `family_members` select policy with a SECURITY DEFINER membership helper |
 
 ---
 
@@ -172,6 +173,8 @@ Route groups:
 **Why `as any` casts exist in API routes**: The hand-written `database.types.ts` placeholder didn't fully satisfy supabase-js v2 type inference. These casts are in API route files only. Now that real generated types are in place they're safe to remove incrementally.
 
 **Why dashboard greeting is client-rendered**: The greeting period (morning/afternoon/evening) is computed in a Client Component so it reflects the viewer's local time rather than the server timezone.
+
+**Why `is_family_member()` exists**: querying `family_members` inside the `family_members` SELECT policy caused PostgreSQL RLS recursion (`infinite recursion detected in policy for relation "family_members"`). The SECURITY DEFINER helper lets policies check membership without recursive policy evaluation.
 
 ---
 
