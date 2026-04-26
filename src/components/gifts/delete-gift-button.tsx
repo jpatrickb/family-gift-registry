@@ -25,7 +25,18 @@ export function DeleteGiftButton({ giftId }: { giftId: string }) {
     <button
       onClick={deleteGift}
       disabled={loading}
-      className="text-sm text-red-500 hover:text-red-700 underline"
+      style={{
+        fontSize: 12.5,
+        color: "oklch(0.58 0.20 25)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 3,
+        fontFamily: "inherit",
+      }}
     >
       {loading ? "Removing…" : "Remove"}
     </button>

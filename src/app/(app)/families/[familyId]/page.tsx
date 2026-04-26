@@ -1,10 +1,8 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { GiftTagMotif, KindredIcon, initials, avatarTone } from "@/components/shared/brand"
+import { CopyInviteLink } from "@/components/family/copy-invite-link"
 
 type FamilyMemberRow = {
   user_id: string
@@ -42,75 +40,110 @@ export default async function FamilyPage({ params }: Params) {
   if (!family) notFound()
 
   const isOwner = family.created_by === user.id
+  const createdYear = new Date(family.created_at).getFullYear()
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{family.name}</h1>
-          <p className="text-gray-600 mt-1">
-            {family.family_members.length} member
-            {family.family_members.length !== 1 ? "s" : ""}
-          </p>
+    <div>
+      {/* Family header card */}
+      <section
+        className="ds-card"
+        style={{
+          padding: "28px 32px",
+          marginBottom: 32,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ position: "absolute", right: -18, top: -22, opacity: 0.5, pointerEvents: "none" }}>
+          <GiftTagMotif size={170} />
         </div>
-        {isOwner && (
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/families/${familyId}/settings`}>Settings</Link>
-          </Button>
-        )}
+        <div style={{ position: "relative" }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <span className="ds-badge ds-badge-primary">
+              <KindredIcon name="users" size={11} strokeWidth={2} />
+              Family
+            </span>
+            <span className="t-meta" style={{ color: "var(--ink-3)", alignSelf: "center" }}>
+              Created {createdYear}
+            </span>
+          </div>
+          <h1 className="t-display-sm" style={{ margin: 0 }}>{family.name}</h1>
+          <p className="t-body" style={{ marginTop: 8 }}>
+            {family.family_members.length} member{family.family_members.length !== 1 ? "s" : ""}
+          </p>
+          <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+            {isOwner && (
+              <>
+                <Link href={`/families/${familyId}/settings`} className="ds-btn ds-btn-secondary ds-btn-sm">
+                  <KindredIcon name="settings" size={13} />
+                  Settings
+                </Link>
+                <CopyInviteLink link={`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/join/${family.invite_code}`} />
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Members grid header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h2 className="t-h2" style={{ margin: 0 }}>Members</h2>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold mb-4">Members</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {family.family_members.map((member) => {
-            const isCurrentUser = member.user_id === user.id
-            const initials = member.profiles.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        {family.family_members.map((member) => {
+          const isCurrentUser = member.user_id === user.id
+          const memberName = member.profiles.name || member.profiles.email
+          const memberInitials = initials(memberName)
+          const tone = avatarTone(member.user_id)
 
-            return (
-              <Card key={member.user_id}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>{initials || "?"}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm truncate">
-                        {member.profiles.name || member.profiles.email}
-                        {isCurrentUser && " (you)"}
-                      </CardTitle>
-                      {member.role === "owner" && (
-                        <Badge variant="secondary" className="text-xs mt-1">
-                          Owner
-                        </Badge>
-                      )}
+          return (
+            <article
+              key={member.user_id}
+              className="ds-card ds-card-hover"
+              style={{ padding: 22, display: "flex", flexDirection: "column", gap: 14 }}
+            >
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <span className={`ds-avatar ds-avatar-lg ${tone}`}>{memberInitials}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 className="t-h2" style={{ margin: 0, fontSize: 17 }}>
+                    {memberName}
+                    {isCurrentUser && (
+                      <span style={{ color: "var(--ink-3)", fontWeight: 400 }}> (you)</span>
+                    )}
+                  </h3>
+                  {member.role === "owner" && (
+                    <div className="t-body-sm" style={{ color: "var(--ink-3)", marginTop: 2 }}>
+                      Owner
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {!isCurrentUser ? (
-                    <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link
-                        href={`/members/${member.user_id}?familyId=${familyId}`}
-                      >
-                        View wishlist
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button asChild variant="outline" size="sm" className="w-full">
-                      <Link href="/gifts">My wishlist</Link>
-                    </Button>
                   )}
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  paddingTop: 12,
+                  borderTop: "1px solid var(--hairline)",
+                }}
+              >
+                {isCurrentUser ? (
+                  <Link href="/gifts" className="ds-btn ds-btn-secondary ds-btn-sm" style={{ width: "100%" }}>
+                    Edit my wishlist
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/members/${member.user_id}?familyId=${familyId}`}
+                    className="ds-btn ds-btn-primary ds-btn-sm"
+                    style={{ width: "100%" }}
+                  >
+                    View {memberName.split(" ")[0]}&apos;s list
+                    <KindredIcon name="arrowRight" size={13} />
+                  </Link>
+                )}
+              </div>
+            </article>
+          )
+        })}
       </div>
     </div>
   )

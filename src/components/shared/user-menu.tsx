@@ -9,16 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Image from "next/image"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 interface UserMenuProps {
   name: string
   email: string
   avatarUrl: string | null
+  initials?: string
+  tone?: string
 }
 
-export function UserMenu({ name, email, avatarUrl }: UserMenuProps) {
+export function UserMenu({ name, email, avatarUrl, initials: userInitials, tone }: UserMenuProps) {
   const router = useRouter()
 
   async function signOut() {
@@ -28,25 +30,36 @@ export function UserMenu({ name, email, avatarUrl }: UserMenuProps) {
     router.refresh()
   }
 
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
+  const nameInitials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?"
+  const fallbackInitials = userInitials ?? nameInitials
+
+  const toneClass = tone ?? "ds-avatar-t-1"
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={avatarUrl ?? undefined} alt={name} />
-          <AvatarFallback>{initials || "?"}</AvatarFallback>
-        </Avatar>
+      <DropdownMenuTrigger>
+        <span
+          className={`ds-avatar ds-avatar-sm ${toneClass}`}
+          style={{ cursor: "pointer" }}
+          aria-label="User menu"
+        >
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt={name}
+              width={30}
+              height={30}
+              style={{ borderRadius: "999px", objectFit: "cover" }}
+            />
+          ) : (
+            fallbackInitials
+          )}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="font-medium">{name}</div>
-          <div className="text-xs font-normal text-gray-500">{email}</div>
+          <div className="text-xs font-normal text-muted-foreground">{email}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push("/account")}>

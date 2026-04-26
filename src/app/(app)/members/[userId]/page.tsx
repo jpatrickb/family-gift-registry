@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { GiftCard } from "@/components/gifts/gift-card"
-import { Button } from "@/components/ui/button"
+import { KindredIcon, initials, avatarTone } from "@/components/shared/brand"
 import type { GiftWithClaim } from "@/types"
 
 type Params = {
@@ -45,38 +45,113 @@ export default async function MemberWishlistPage({ params, searchParams }: Param
   const gifts = (giftsRaw ?? []) as GiftWithClaim[]
 
   const displayName = profile.name || profile.email
+  const firstName = profile.name?.split(" ")[0] ?? displayName
+  const memberInitials = initials(displayName)
+  const tone = avatarTone(userId)
+
+  const claimedCount = gifts.filter((g) => g.gift_claims?.status === "claimed" || g.gift_claims?.status === "purchased").length
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{displayName}&apos;s Wishlist</h1>
-          <p className="text-gray-600 mt-1">
-            Items {displayName} wants — claim one to let others know you&apos;re
-            buying it
-          </p>
+    <div>
+      {/* Back link */}
+      {familyId && (
+        <Link
+          href={`/families/${familyId}`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 13,
+            color: "var(--ink-3)",
+            textDecoration: "none",
+            fontWeight: 500,
+            marginBottom: 18,
+          }}
+        >
+          <KindredIcon name="arrowLeft" size={14} />
+          Back to family
+        </Link>
+      )}
+
+      {/* Header */}
+      <section style={{ display: "flex", gap: 20, alignItems: "center", marginBottom: 8 }}>
+        <span className={`ds-avatar ds-avatar-xl ${tone}`}>{memberInitials}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 className="t-display-sm" style={{ margin: 0 }}>
+            <em style={{ fontStyle: "italic", color: "oklch(0.40 0.16 285)" }}>{firstName}&apos;s</em> wishlist
+          </h1>
+          <div style={{ display: "flex", gap: 8, marginTop: 6, alignItems: "center" }}>
+            <span className="t-body" style={{ color: "var(--ink-2)" }}>
+              {gifts.length} item{gifts.length !== 1 ? "s" : ""}
+            </span>
+            {claimedCount > 0 && (
+              <>
+                <span className="ds-dot" />
+                <span className="t-body" style={{ color: "var(--ink-3)" }}>
+                  {claimedCount} already claimed
+                </span>
+              </>
+            )}
+          </div>
         </div>
-        {familyId && (
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/families/${familyId}`}>← Back to family</Link>
-          </Button>
-        )}
+      </section>
+
+      {/* Helper banner */}
+      <div
+        style={{
+          background: "var(--primary-soft)",
+          border: "1px solid oklch(0.88 0.04 285)",
+          borderRadius: 12,
+          padding: "14px 18px",
+          margin: "24px 0 28px",
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 8,
+            background: "var(--surface)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "oklch(0.42 0.14 285)",
+            flexShrink: 0,
+          }}
+        >
+          <KindredIcon name="sparkle" size={14} />
+        </span>
+        <div className="t-body-sm" style={{ color: "var(--ink-2)", flex: 1 }}>
+          <strong style={{ color: "var(--ink)" }}>{firstName} can&apos;t see who claimed what.</strong> Pick
+          something you want to get them, then mark it as purchased when it arrives.
+        </div>
       </div>
 
-      {gifts.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Gift list */}
+      {gifts.length === 0 ? (
+        <div
+          className="ds-card"
+          style={{ padding: "48px 32px", textAlign: "center" }}
+        >
+          <div className="t-display-sm" style={{ color: "var(--ink-3)" }}>Nothing here yet</div>
+          <p className="t-body" style={{ color: "var(--ink-3)", marginTop: 8 }}>
+            {displayName} hasn&apos;t added any gifts yet.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
           {gifts.map((gift) => (
             <GiftCard
               key={gift.id}
               gift={gift}
               isOwner={false}
               showClaimStatus={true}
+              currentUserId={user.id}
             />
           ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 text-gray-500">
-          <p>{displayName} hasn&apos;t added any gifts yet.</p>
         </div>
       )}
     </div>

@@ -2,24 +2,24 @@
 
 import { useOptimistic, useState, useTransition } from "react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { KindredIcon } from "@/components/shared/brand"
 import type { GiftClaim } from "@/types"
 
 interface ClaimButtonProps {
   giftId: string
   claim: GiftClaim | null
+  isMyClaim: boolean
 }
 
 type ClaimState = {
   claim: GiftClaim | null
 }
 
-export function ClaimButton({ giftId, claim: initialClaim }: ClaimButtonProps) {
+export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsMyClaim }: ClaimButtonProps) {
   const [, startTransition] = useTransition()
-  const [optimisticState, setOptimistic] = useOptimistic<ClaimState>(
-    { claim: initialClaim }
-  )
+  const [optimisticState, setOptimistic] = useOptimistic<ClaimState>({ claim: initialClaim })
   const [loading, setLoading] = useState(false)
+  const [isMyClaim, setIsMyClaim] = useState(initialIsMyClaim)
 
   const claim = optimisticState.claim
 
@@ -39,6 +39,7 @@ export function ClaimButton({ giftId, claim: initialClaim }: ClaimButtonProps) {
     } else {
       const { claim: newClaim } = await res.json()
       startTransition(() => setOptimistic({ claim: newClaim }))
+      setIsMyClaim(true)
       toast.success("Gift claimed!")
     }
     setLoading(false)
@@ -71,29 +72,70 @@ export function ClaimButton({ giftId, claim: initialClaim }: ClaimButtonProps) {
       startTransition(() => setOptimistic({ claim: initialClaim }))
       toast.error("Failed to unclaim")
     } else {
+      setIsMyClaim(false)
       toast.success("Unclaimed")
+    }
+    setLoading(false)
+  }
+
+  async function handleUndo() {
+    setLoading(true)
+    startTransition(() => {
+      setOptimistic({ claim: { ...claim!, status: "claimed" } })
+    })
+    const res = await fetch(`/api/gifts/${giftId}/claim`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "claimed" }),
+    })
+    if (!res.ok) {
+      startTransition(() => setOptimistic({ claim: initialClaim }))
+      toast.error("Failed to undo")
     }
     setLoading(false)
   }
 
   if (!claim) {
     return (
-      <Button size="sm" onClick={handleClaim} disabled={loading}>
+      <button
+        className="ds-btn ds-btn-primary ds-btn-sm"
+        onClick={handleClaim}
+        disabled={loading}
+      >
+        <KindredIcon name="heart" size={13} />
         I&apos;ll get this
-      </Button>
+      </button>
     )
   }
 
-  return (
-    <div className="flex gap-2 flex-wrap">
-      {claim.status === "claimed" && (
-        <Button size="sm" variant="default" onClick={handleMarkPurchased} disabled={loading}>
+  if (claim.status === "purchased" && isMyClaim) {
+    return (
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="ds-btn ds-btn-ghost ds-btn-sm" onClick={handleUndo} disabled={loading}>
+          Undo
+        </button>
+      </div>
+    )
+  }
+
+  if (claim.status === "claimed" && isMyClaim) {
+    return (
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="ds-btn ds-btn-accent ds-btn-sm" onClick={handleMarkPurchased} disabled={loading}>
+          <KindredIcon name="check" size={13} />
           Mark purchased
-        </Button>
-      )}
-      <Button size="sm" variant="outline" onClick={handleUnclaim} disabled={loading}>
-        Unclaim
-      </Button>
-    </div>
+        </button>
+        <button className="ds-btn ds-btn-ghost ds-btn-sm" onClick={handleUnclaim} disabled={loading}>
+          Unclaim
+        </button>
+      </div>
+    )
+  }
+
+  // Someone else claimed it
+  return (
+    <button className="ds-btn ds-btn-ghost ds-btn-sm" disabled>
+      Someone&apos;s got it
+    </button>
   )
 }

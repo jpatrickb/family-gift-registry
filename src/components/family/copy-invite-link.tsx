@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { KindredIcon } from "@/components/shared/brand"
 
 export function CopyInviteLink({ link }: { link: string }) {
   const [copied, setCopied] = useState(false)
@@ -16,11 +15,13 @@ export function CopyInviteLink({ link }: { link: string }) {
   }
 
   return (
-    <div className="flex gap-2">
-      <Input value={link} readOnly className="flex-1 text-sm" />
-      <Button variant="outline" onClick={copy}>
-        {copied ? "Copied!" : "Copy"}
-      </Button>
-    </div>
+    <button
+      type="button"
+      className="ds-btn ds-btn-secondary ds-btn-sm"
+      onClick={copy}
+    >
+      <KindredIcon name={copied ? "check" : "copy"} size={13} />
+      {copied ? "Copied!" : "Copy invite link"}
+    </button>
   )
 }

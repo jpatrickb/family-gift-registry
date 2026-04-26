@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
+import { BrandMark, KindredIcon, initials, avatarTone } from "./brand"
 import { UserMenu } from "./user-menu"
 
 export async function Nav({ userId }: { userId: string }) {
@@ -13,50 +14,121 @@ export async function Nav({ userId }: { userId: string }) {
     .single()
   const profile = profileRaw as { name: string; email: string; avatar_url: string | null } | null
 
-  // Get families the user is a member of via memberships
-  const { data: membershipsRaw } = await (supabase as any)
-    .from("family_members")
-    .select("family_id")
-    .eq("user_id", userId)
-  const memberships = (membershipsRaw ?? []) as { family_id: string }[]
-  const familyIds = memberships.map((m) => m.family_id)
-
-  const families: { id: string; name: string }[] =
-    familyIds.length > 0
-      ? (((await (supabase as any).from("families").select("id, name").in("id", familyIds)).data ?? []) as { id: string; name: string }[])
-      : []
+  const userInitials = profile?.name ? initials(profile.name) : (profile?.email?.[0] ?? "?").toUpperCase()
+  const userTone = avatarTone(userId)
 
   return (
-    <header className="border-b bg-white">
-      <div className="container mx-auto px-4 max-w-6xl flex h-14 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="font-semibold text-lg">
-            Gift Registry
+    <header
+      style={{
+        background: "var(--surface)",
+        borderBottom: "1px solid var(--hairline)",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1120,
+          margin: "0 auto",
+          padding: "0 28px",
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 24,
+        }}
+      >
+        {/* Left: brand + nav */}
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <Link
+            href="/dashboard"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              textDecoration: "none",
+            }}
+          >
+            <BrandMark size={28} />
+            <span
+              style={{
+                fontFamily: "var(--font-display, Georgia, serif)",
+                fontSize: 20,
+                color: "var(--ink)",
+                letterSpacing: "-0.005em",
+              }}
+            >
+              Kindred
+            </span>
           </Link>
-          <nav className="hidden md:flex items-center gap-4 text-sm">
-            <Link href="/dashboard" className="text-gray-600 hover:text-gray-900">
-              Home
-            </Link>
-            <Link href="/gifts" className="text-gray-600 hover:text-gray-900">
-              My Wishlist
-            </Link>
-            {families.map((f) => (
+
+          <nav style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {[
+              { href: "/dashboard", label: "Home", icon: "home" as const },
+              { href: "/gifts", label: "My wishlist", icon: "gift" as const },
+              { href: "/dashboard", label: "Families", icon: "users" as const },
+            ].map((item) => (
               <Link
-                key={f.id}
-                href={`/families/${f.id}`}
-                className="text-gray-600 hover:text-gray-900"
+                key={item.label}
+                href={item.href}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  textDecoration: "none",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: "var(--ink-3)",
+                  transition: "background 120ms ease, color 120ms ease",
+                }}
+                className="nav-link"
               >
-                {f.name}
+                <KindredIcon name={item.icon} size={14} />
+                {item.label}
               </Link>
             ))}
           </nav>
         </div>
-        <UserMenu
-          name={profile?.name ?? ""}
-          email={profile?.email ?? ""}
-          avatarUrl={profile?.avatar_url ?? null}
-        />
+
+        {/* Right: search, bell, avatar */}
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <button
+            className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm"
+            aria-label="Search"
+            style={{ borderRadius: 8 }}
+          >
+            <KindredIcon name="search" size={16} />
+          </button>
+
+          <button
+            className="ds-btn ds-btn-ghost ds-btn-icon ds-btn-sm"
+            aria-label="Notifications"
+            style={{ position: "relative", borderRadius: 8 }}
+          >
+            <KindredIcon name="bell" size={16} />
+          </button>
+
+          <div style={{ width: 1, height: 22, background: "var(--hairline)", margin: "0 6px" }} />
+
+          <UserMenu
+            name={profile?.name ?? ""}
+            email={profile?.email ?? ""}
+            avatarUrl={profile?.avatar_url ?? null}
+            initials={userInitials}
+            tone={userTone}
+          />
+        </div>
       </div>
+
+      <style>{`
+        .nav-link:hover {
+          background: var(--surface-3);
+          color: var(--ink);
+        }
+      `}</style>
     </header>
   )
 }
