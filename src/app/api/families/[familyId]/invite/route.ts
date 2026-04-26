@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { inviteMemberSchema } from "@/lib/validations"
 import { sendInviteEmail } from "@/lib/resend"
 
@@ -42,8 +43,10 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Family not found" }, { status: 404 })
   }
 
-  // Delete any existing invite for this email+family so we can create a fresh one
-  await supabase
+  // Delete any existing invite for this email+family so we can create a fresh one.
+  // Uses admin client because there is no RLS DELETE policy on family_invites.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (createAdminClient() as any)
     .from("family_invites")
     .delete()
     .eq("family_id", familyId)
