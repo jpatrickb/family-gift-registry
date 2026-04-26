@@ -160,6 +160,7 @@ Route groups:
 | `supabase/migrations/0001_initial_schema.sql` | Full DB schema, RLS policies, triggers |
 | `supabase/migrations/0002_fix_family_members_rls_recursion.sql` | Replaces recursive `family_members` select policy with a SECURITY DEFINER membership helper |
 | `supabase/migrations/0003_create_family_rpc.sql` | Adds `create_family(text)` SECURITY DEFINER RPC for reliable family creation under RLS |
+| `supabase/migrations/0004_backfill_profiles_and_harden_create_family.sql` | Backfills missing `profiles` rows from `auth.users` and ensures `create_family()` creates caller profile before inserting family |
 
 ---
 
@@ -178,6 +179,8 @@ Route groups:
 **Why `is_family_member()` exists**: querying `family_members` inside the `family_members` SELECT policy caused PostgreSQL RLS recursion (`infinite recursion detected in policy for relation "family_members"`). The SECURITY DEFINER helper lets policies check membership without recursive policy evaluation.
 
 **Why `/api/families` calls `create_family()`**: creating a family with `insert(...).select().single()` can fail under RLS because the immediate read-back depends on membership visibility timing. The RPC creates the family and owner membership in one privileged function and returns the new `family_id` directly.
+
+**Why `create_family()` now upserts `profiles`**: older users can exist in `auth.users` without a corresponding `public.profiles` row, which causes `families.created_by` foreign-key failures. The function now guarantees the caller profile exists before inserting a family.
 
 ---
 

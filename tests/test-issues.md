@@ -84,3 +84,15 @@
 - **Expected:** Submit redirects to `/families/[id]` and creates family.
 - **Observed:** Still no redirect; inline alert now shows: `new row violates row-level security policy for table "families"`.
 - **Notes:** Error signature changed from prior `family_members` recursion to direct `families` RLS rejection.
+
+### T-FAM-01 - Create a family (newest retest after Supabase/security update)
+- **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
+- **Expected:** Submit redirects to `/families/[id]` and creates family.
+- **Observed:** Still no redirect; inline alert now shows: `insert or update on table "families" violates foreign key constraint "families_created_by_fkey"`.
+- **Notes:** Failure mode changed again: now FK violation on `created_by` instead of RLS denial.
+
+### T-FAM-01 - Create a family (post profile-backfill + create_family hardening)
+- **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
+- **Expected:** Submit redirects to `/families/[id]` and creates family.
+- **Observed:** PASS. Form submitted successfully and redirected to `/families/e484dd1d-817e-4ab8-a664-33d8e0347c73`.
+- **Verification:** Family page rendered with the correct name (`Beal Family Final Smoke 20260426-1302`), member count (`1 member`), and owner card for signed-in user (`Patrick Beal (you)`).
