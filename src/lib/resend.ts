@@ -6,6 +6,10 @@ function getResendClient() {
   return new Resend(key)
 }
 
+function getFromAddress() {
+  return process.env.RESEND_FROM_EMAIL ?? "Gift Registry <noreply@resend.dev>"
+}
+
 export async function sendInviteEmail({
   to,
   inviterName,
@@ -31,7 +35,7 @@ export async function sendInviteEmail({
 
   const resend = getResendClient()
   return resend.emails.send({
-    from: "Gift Registry <noreply@resend.dev>",
+    from: getFromAddress(),
     to,
     subject: `${inviterName} invited you to join ${familyName} on Gift Registry`,
     html,

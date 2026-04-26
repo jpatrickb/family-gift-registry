@@ -11,11 +11,11 @@
 Before running tests, you need two accounts in Supabase so multi-user scenarios work.
 
 **Account A (primary tester)**
-- Email: `test-a@Lumen-test.dev`
+- Email: `jpatrickbeall@gmail.com`
 - Password: `TestPassword1!`
 
 **Account B (second family member)**
-- Email: `test-b@Lumen-test.dev`
+- Email: `patrickbeal@techforceadvisors.com`
 - Password: `TestPassword1!`
 
 If either account does not exist yet, create it by running the signup flow (see T-AUTH-02 / T-AUTH-03) before proceeding. These accounts are reused across all tests, so only create them once.

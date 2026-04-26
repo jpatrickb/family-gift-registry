@@ -59,7 +59,7 @@ export default async function InvitePage({ params }: Params) {
           <h1 className="text-2xl font-bold">You&apos;re invited!</h1>
           <p className="text-gray-600 mt-2">
             {inviterName} has invited you to join <strong>{familyName}</strong> on
-            Gift Registry.
+            Lumen List.
           </p>
         </div>
 

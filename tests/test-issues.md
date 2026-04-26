@@ -91,8 +91,37 @@
 - **Observed:** Still no redirect; inline alert now shows: `insert or update on table "families" violates foreign key constraint "families_created_by_fkey"`.
 - **Notes:** Failure mode changed again: now FK violation on `created_by` instead of RLS denial.
 
+### T-GIFT-01 / T-GIFT-03 - Price not visible in wishlist cards
+- **URL:** `https://family-gift-registry-zeta.vercel.app/gifts`
+- **Expected:** Gift cards show entered price (e.g., `$89.99`, then `$79.99` after edit).
+- **Observed:** Gift cards render title/notes/link/actions, but no visible price text after create or edit.
+- **Notes:** Reproduced with `Blue Knit Sweater` and `French Press Coffee Maker`.
+
+### T-AUTH-04 (Account B) - Login still failing for test user
+- **URL:** `https://family-gift-registry-zeta.vercel.app/login`
+- **Expected:** `test-b@Lumen-test.dev` with `TestPassword1!` should sign in and allow multi-user tests.
+- **Observed:** Remains on `/login` with inline alert `Invalid login credentials`.
+- **Impact:** Blocks claim/privacy/invite acceptance validation that depends on second account.
+
+### T-FAM-03 / shareable join link - generated link resolves as invalid
+- **Generated URL:** `https://family-gift-registry-zeta.vercel.app//join/f8be5c8ec614`
+- **Resolved URL in browser:** `https://family-gift-registry-zeta.vercel.app/join/f8be5c8ec614`
+- **Expected:** Link should open join page for the family and allow login/create-account/join flow.
+- **Observed:** Join route renders `Invalid link` with text `This invite link doesn't exist.`
+- **Notes:** Reproduced directly by navigating to the exact generated URL.
+
 ### T-FAM-01 - Create a family (post profile-backfill + create_family hardening)
 - **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
 - **Expected:** Submit redirects to `/families/[id]` and creates family.
 - **Observed:** PASS. Form submitted successfully and redirected to `/families/e484dd1d-817e-4ab8-a664-33d8e0347c73`.
 - **Verification:** Family page rendered with the correct name (`Beal Family Final Smoke 20260426-1302`), member count (`1 member`), and owner card for signed-in user (`Patrick Beal (you)`).
+
+### Auth + error-page retest status (latest)
+- **T-AUTH-05 wrong-password messaging:** PASS. `/login` shows visible inline alert text `Invalid login credentials`.
+- **T-AUTH signup validation visibility:** PASS. `/signup` shows clear validation feedback (browser email-format validation and inline `Password must be at least 8 characters`).
+- **T-EDGE-01 authenticated 404:** PASS. `/this-page-does-not-exist` now renders user-friendly `Page not found` UI (no generic crash page).
+- **Join invalid code handling:** PASS. `/join/abc123def456` renders `Invalid link` with guidance.
+- **Invite invalid token handling:** PASS. `/invite/thisisaninvalidtoken` renders `Invite not found` with guidance.
+
+### Production signal check
+- **Vercel runtime logs (`/api/families`):** latest POST now returns `201` (successful family creation), after earlier historical `500` entries.

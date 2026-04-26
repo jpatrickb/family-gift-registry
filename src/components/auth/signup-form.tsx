@@ -33,11 +33,14 @@ export function SignupForm() {
     setLoading(true)
     setSubmitError(null)
     const supabase = getSupabaseBrowserClient()
-    const { error } = await supabase.auth.signUp({
+    const appUrl =
+      (process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin).replace(/\/$/, "")
+    const { data: signupData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { name: data.name },
+        emailRedirectTo: `${appUrl}/login`,
       },
     })
     if (error) {
@@ -47,13 +50,8 @@ export function SignupForm() {
       return
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
-    if (signInError) {
-      toast.error(signInError.message)
-      setSubmitError(signInError.message)
+    if (!signupData.session) {
+      toast.success("Check your email to confirm your account, then sign in.")
       setLoading(false)
       return
     }

@@ -31,11 +31,9 @@ export async function POST(request: Request, { params }: Params) {
     return NextResponse.json({ error: "Not a member" }, { status: 403 })
   }
 
-  // Get family name and inviter profile
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [familyResult, profileResult] = await Promise.all([
-    (supabase as any).from("families").select("*").eq("id", familyId).single(),
-    (supabase as any).from("profiles").select("*").eq("id", user.id).single(),
+    supabase.from("families").select("name").eq("id", familyId).single(),
+    supabase.from("profiles").select("name").eq("id", user.id).single(),
   ])
   const familyData = familyResult.data as { name: string } | null
   const profileData = profileResult.data as { name: string } | null
@@ -51,8 +49,7 @@ export async function POST(request: Request, { params }: Params) {
     .eq("family_id", familyId)
     .eq("email", parsed.data.email)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const insertResult = await (supabase as any)
+  const insertResult = await supabase
     .from("family_invites")
     .insert({
       family_id: familyId,
@@ -71,7 +68,10 @@ export async function POST(request: Request, { params }: Params) {
     )
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
+    /\/$/,
+    ""
+  )
   const inviteUrl = `${appUrl}/invite/${invite.token}`
 
   await sendInviteEmail({

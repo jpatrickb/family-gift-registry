@@ -24,7 +24,10 @@ export default async function FamilySettingsPage({ params }: Params) {
 
   if (!family) notFound()
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
+    /\/$/,
+    ""
+  )
   const shareableLink = `${appUrl}/join/${family.invite_code}`
 
   return (
@@ -61,7 +64,7 @@ export default async function FamilySettingsPage({ params }: Params) {
           <CardTitle className="text-base">Members</CardTitle>
         </CardHeader>
         <CardContent>
-          <MemberListSection familyId={familyId} currentUserId={user.id} isOwner={family.created_by === user.id} />
+          <MemberListSection familyId={familyId} currentUserId={user.id} />
         </CardContent>
       </Card>
     </div>
@@ -71,11 +74,9 @@ export default async function FamilySettingsPage({ params }: Params) {
 async function MemberListSection({
   familyId,
   currentUserId,
-  isOwner,
 }: {
   familyId: string
   currentUserId: string
-  isOwner: boolean
 }) {
   const supabase = await createClient()
   const { data: members } = await supabase

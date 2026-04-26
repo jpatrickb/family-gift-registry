@@ -1,4 +1,4 @@
-# Family Gift Registry
+# Lumen List — Family Gift Registry
 
 A web app for families to share wishlists and coordinate gift purchases without spoiling surprises. Family members can see what others want and mark items as claimed or purchased — but the person who added the gift never sees who's buying what for them.
 
@@ -14,7 +14,7 @@ A web app for families to share wishlists and coordinate gift purchases without 
 
 - **Next.js 15** (App Router, TypeScript)
 - **Supabase** (Postgres + Auth + Row Level Security)
-- **Resend** (transactional email for invites)
+- **Resend** (transactional email for invites and auth SMTP)
 - **TailwindCSS + shadcn/ui**
 - **Vercel** (hosting)
 
@@ -31,6 +31,7 @@ A web app for families to share wishlists and coordinate gift purchases without 
    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
    SUPABASE_SERVICE_ROLE_KEY=
    RESEND_API_KEY=
+   RESEND_FROM_EMAIL="Lumenlist <hello@join.lumenlist.app>"
    NEXT_PUBLIC_APP_URL=http://localhost:3000
    ```
 

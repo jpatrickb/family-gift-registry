@@ -16,7 +16,7 @@ Families share gift wishlists. Members can claim gifts on behalf of one another 
 |---|---|
 | Framework | Next.js 15, App Router, TypeScript |
 | Database + Auth | Supabase (Postgres, RLS, email/password auth) |
-| Email | Resend |
+| Email | Resend (direct invites) + Supabase Auth via custom SMTP |
 | UI | TailwindCSS, shadcn/ui v4 (Base UI primitives) |
 | Hosting | Vercel |
 
@@ -192,6 +192,7 @@ Route groups:
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser + server clients |
 | `SUPABASE_SERVICE_ROLE_KEY` | Admin client (invite acceptance routes) |
 | `RESEND_API_KEY` | Email invite sending |
+| `RESEND_FROM_EMAIL` | Resend sender identity for app emails |
 | `NEXT_PUBLIC_APP_URL` | Invite link generation |
 
 ---

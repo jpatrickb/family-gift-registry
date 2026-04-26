@@ -78,7 +78,9 @@ export default async function FamilyPage({ params }: Params) {
                   <LumenIcon name="settings" size={13} />
                   Settings
                 </Link>
-                <CopyInviteLink link={`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/join/${family.invite_code}`} />
+                <CopyInviteLink
+                  link={`${(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}/join/${family.invite_code}`}
+                />
               </>
             )}
           </div>

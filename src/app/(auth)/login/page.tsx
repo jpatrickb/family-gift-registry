@@ -8,7 +8,7 @@ export default function LoginPage() {
       <div className="text-center">
         <h1 className="text-2xl font-bold">Sign in</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Welcome back to Gift Registry
+          Welcome back to Lumen List
         </p>
       </div>
       <Suspense>
