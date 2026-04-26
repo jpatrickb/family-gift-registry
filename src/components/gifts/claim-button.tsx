@@ -2,7 +2,7 @@
 
 import { useOptimistic, useState, useTransition } from "react"
 import { toast } from "sonner"
-import { KindredIcon } from "@/components/shared/brand"
+import { LumenIcon } from "@/components/shared/brand"
 import type { GiftClaim } from "@/types"
 
 interface ClaimButtonProps {
@@ -102,7 +102,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
         onClick={handleClaim}
         disabled={loading}
       >
-        <KindredIcon name="heart" size={13} />
+        <LumenIcon name="heart" size={13} />
         I&apos;ll get this
       </button>
     )
@@ -122,7 +122,7 @@ export function ClaimButton({ giftId, claim: initialClaim, isMyClaim: initialIsM
     return (
       <div style={{ display: "flex", gap: 8 }}>
         <button className="ds-btn ds-btn-accent ds-btn-sm" onClick={handleMarkPurchased} disabled={loading}>
-          <KindredIcon name="check" size={13} />
+          <LumenIcon name="check" size={13} />
           Mark purchased
         </button>
         <button className="ds-btn ds-btn-ghost ds-btn-sm" onClick={handleUnclaim} disabled={loading}>

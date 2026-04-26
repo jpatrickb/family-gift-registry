@@ -2,7 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { GiftCard } from "@/components/gifts/gift-card"
-import { GiftTagMotif, KindredIcon } from "@/components/shared/brand"
+import { GiftTagMotif, LumenIcon } from "@/components/shared/brand"
 import type { Gift } from "@/types"
 
 export default async function MyGiftsPage() {
@@ -42,18 +42,18 @@ export default async function MyGiftsPage() {
         }}
       >
         <div>
-          <h1 className="t-h1" style={{ margin: 0 }}>My wishlist</h1>
+          <h1 className="t-h1" style={{ margin: 0 }}>My Lumen List</h1>
           <p className="t-body" style={{ marginTop: 8, maxWidth: 580 }}>
             Items you&apos;d love. Family members can quietly mark when they&apos;ve bought something — no spoilers.
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, flexShrink: 0, paddingTop: 4 }}>
           <Link href="/gifts/new" className="ds-btn ds-btn-secondary">
-            <KindredIcon name="link" size={14} />
+            <LumenIcon name="link" size={14} />
             Paste a link
           </Link>
           <Link href="/gifts/new" className="ds-btn ds-btn-primary">
-            <KindredIcon name="plus" size={14} />
+            <LumenIcon name="plus" size={14} />
             Add gift
           </Link>
         </div>
@@ -83,7 +83,7 @@ export default async function MyGiftsPage() {
           </p>
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
             <Link href="/gifts/new" className="ds-btn ds-btn-primary">
-              <KindredIcon name="plus" size={14} />
+              <LumenIcon name="plus" size={14} />
               Add your first gift
             </Link>
           </div>
@@ -126,7 +126,7 @@ export default async function MyGiftsPage() {
                     marginBottom: 8,
                   }}
                 >
-                  <KindredIcon name={s.icon} size={13} />
+                  <LumenIcon name={s.icon} size={13} />
                 </span>
                 <div className="t-h3" style={{ fontSize: 13.5 }}>{s.t}</div>
                 <div className="t-body-sm" style={{ color: "var(--ink-3)", marginTop: 2, fontSize: 12.5 }}>

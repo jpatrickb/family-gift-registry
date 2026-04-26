@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
-import { KindredIcon } from "@/components/shared/brand"
+import { LumenIcon } from "@/components/shared/brand"
 import type { Gift } from "@/types"
 import { giftSchema, type GiftInput } from "@/lib/validations"
 
@@ -71,7 +71,7 @@ export function GiftForm({ families, gift }: GiftFormProps) {
               marginBottom: 8,
             }}
           >
-            <KindredIcon name="link" size={16} style={{ color: "var(--ink-3)", flexShrink: 0 }} />
+            <LumenIcon name="link" size={16} style={{ color: "var(--ink-3)", flexShrink: 0 }} />
             <input
               className="ds-input"
               style={{ border: "none", boxShadow: "none", padding: 0, height: 38, background: "transparent", flex: 1 }}
@@ -86,7 +86,7 @@ export function GiftForm({ families, gift }: GiftFormProps) {
                 if (pasteUrl.trim()) form.setValue("url", pasteUrl.trim())
               }}
             >
-              <KindredIcon name="sparkle" size={13} />
+              <LumenIcon name="sparkle" size={13} />
               Auto-fill
             </button>
           </div>
@@ -136,7 +136,7 @@ export function GiftForm({ families, gift }: GiftFormProps) {
                     transition: "all 120ms ease",
                   }}
                 >
-                  {isSelected && <KindredIcon name="check" size={13} />}
+                  {isSelected && <LumenIcon name="check" size={13} />}
                   {f.name}
                 </button>
               )
@@ -255,7 +255,7 @@ export function GiftForm({ families, gift }: GiftFormProps) {
             className="ds-btn ds-btn-primary"
             disabled={loading}
           >
-            <KindredIcon name="plus" size={14} />
+            <LumenIcon name="plus" size={14} />
             {loading ? "Saving…" : isEditing ? "Save changes" : "Add to wishlist"}
           </button>
         </div>

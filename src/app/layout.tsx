@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Kindred — Family Gift Registry",
-  description: "Share wishlists with family — no spoilers",
+  title: "Lumen — Lumen List for Families",
+  description: "Share Lumen Lists with family — no spoilers",
 }
 
 export default function RootLayout({

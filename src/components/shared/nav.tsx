@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
-import { BrandMark, KindredIcon, initials, avatarTone } from "./brand"
+import { BrandMark, LumenIcon, initials, avatarTone } from "./brand"
 import { UserMenu } from "./user-menu"
 
 export async function Nav({ userId }: { userId: string }) {
@@ -59,14 +59,14 @@ export async function Nav({ userId }: { userId: string }) {
                 letterSpacing: "-0.005em",
               }}
             >
-              Kindred
+              Lumen
             </span>
           </Link>
 
           <nav style={{ display: "flex", alignItems: "center", gap: 2 }}>
             {[
               { href: "/dashboard", label: "Home", icon: "home" as const },
-              { href: "/gifts", label: "My wishlist", icon: "gift" as const },
+              { href: "/gifts", label: "My Lumen List", icon: "gift" as const },
               { href: "/dashboard", label: "Families", icon: "users" as const },
             ].map((item) => (
               <Link
@@ -86,7 +86,7 @@ export async function Nav({ userId }: { userId: string }) {
                 }}
                 className="nav-link"
               >
-                <KindredIcon name={item.icon} size={14} />
+                <LumenIcon name={item.icon} size={14} />
                 {item.label}
               </Link>
             ))}
@@ -100,7 +100,7 @@ export async function Nav({ userId }: { userId: string }) {
             aria-label="Search"
             style={{ borderRadius: 8 }}
           >
-            <KindredIcon name="search" size={16} />
+            <LumenIcon name="search" size={16} />
           </button>
 
           <button
@@ -108,7 +108,7 @@ export async function Nav({ userId }: { userId: string }) {
             aria-label="Notifications"
             style={{ position: "relative", borderRadius: 8 }}
           >
-            <KindredIcon name="bell" size={16} />
+            <LumenIcon name="bell" size={16} />
           </button>
 
           <div style={{ width: 1, height: 22, background: "var(--hairline)", margin: "0 6px" }} />

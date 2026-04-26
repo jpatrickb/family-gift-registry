@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { KindredIcon } from "@/components/shared/brand"
+import { LumenIcon } from "@/components/shared/brand"
 import { ClaimButton } from "./claim-button"
 import { DeleteGiftButton } from "./delete-gift-button"
 import type { GiftWithClaim, Gift } from "@/types"
@@ -57,7 +57,7 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
               className="ds-img-placeholder"
               style={{ borderRight: "1px solid var(--hairline)", borderBottom: "none", minHeight: 120 }}
             >
-              <KindredIcon name="gift" size={18} style={{ opacity: 0.3 }} />
+              <LumenIcon name="gift" size={18} style={{ opacity: 0.3 }} />
             </div>
           )}
           <div
@@ -96,7 +96,7 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
                       }}
                     >
                       {domain}
-                      <KindredIcon name="external" size={11} />
+                      <LumenIcon name="external" size={11} />
                     </a>
                   )}
                 </div>
@@ -104,12 +104,12 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
               <div style={{ flexShrink: 0 }}>
                 {isPurchased ? (
                   <span className="ds-badge ds-badge-accent">
-                    <KindredIcon name="checkCircle" size={11} strokeWidth={2} />
+                    <LumenIcon name="checkCircle" size={11} strokeWidth={2} />
                     Purchased
                   </span>
                 ) : isClaimed ? (
                   <span className="ds-badge ds-badge-primary">
-                    <KindredIcon name="shoppingBag" size={11} strokeWidth={2} />
+                    <LumenIcon name="shoppingBag" size={11} strokeWidth={2} />
                     Claimed
                   </span>
                 ) : (
@@ -159,7 +159,7 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
         </div>
       ) : (
         <div className="ds-img-placeholder" style={{ aspectRatio: "4 / 3" }}>
-          <KindredIcon name="gift" size={20} style={{ opacity: 0.3 }} />
+          <LumenIcon name="gift" size={20} style={{ opacity: 0.3 }} />
         </div>
       )}
 
@@ -222,7 +222,7 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
               }}
             >
               {domain}
-              <KindredIcon name="external" size={11} />
+              <LumenIcon name="external" size={11} />
             </a>
           ) : (
             <span />
@@ -241,7 +241,7 @@ export function GiftCard({ gift, isOwner, showClaimStatus = false, currentUserId
                   gap: 3,
                 }}
               >
-                <KindredIcon name="pencil" size={12} />
+                <LumenIcon name="pencil" size={12} />
                 Edit
               </Link>
               <DeleteGiftButton giftId={gift.id} />

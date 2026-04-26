@@ -1,4 +1,4 @@
-# Kindred — End-to-End Test Plan
+# Lumen — End-to-End Test Plan
 
 **App URL:** https://family-gift-registry-zeta.vercel.app  
 **Agent tool:** Use Playwright MCP (`mcp__plugin_playwright_playwright__*`) to execute each test.  
@@ -11,11 +11,11 @@
 Before running tests, you need two accounts in Supabase so multi-user scenarios work.
 
 **Account A (primary tester)**
-- Email: `test-a@kindred-test.dev`
+- Email: `test-a@Lumen-test.dev`
 - Password: `TestPassword1!`
 
 **Account B (second family member)**
-- Email: `test-b@kindred-test.dev`
+- Email: `test-b@Lumen-test.dev`
 - Password: `TestPassword1!`
 
 If either account does not exist yet, create it by running the signup flow (see T-AUTH-02 / T-AUTH-03) before proceeding. These accounts are reused across all tests, so only create them once.
@@ -39,7 +39,7 @@ If either account does not exist yet, create it by running the signup flow (see 
 **Steps**
 1. Navigate to `/signup`
 2. Enter name: `Test User A`
-3. Enter email: `test-a@kindred-test.dev`
+3. Enter email: `test-a@Lumen-test.dev`
 4. Enter password: `TestPassword1!`
 5. Submit the form
 
@@ -55,7 +55,7 @@ If either account does not exist yet, create it by running the signup flow (see 
 1. Sign out if currently logged in (via user menu → Sign out)
 2. Navigate to `/signup`
 3. Enter name: `Test User B`
-4. Enter email: `test-b@kindred-test.dev`
+4. Enter email: `test-b@Lumen-test.dev`
 5. Enter password: `TestPassword1!`
 6. Submit
 
@@ -68,7 +68,7 @@ If either account does not exist yet, create it by running the signup flow (see 
 **Steps**
 1. Sign out if logged in
 2. Navigate to `/login`
-3. Enter email: `test-a@kindred-test.dev`, password: `TestPassword1!`
+3. Enter email: `test-a@Lumen-test.dev`, password: `TestPassword1!`
 4. Submit
 
 **Expected**
@@ -80,7 +80,7 @@ If either account does not exist yet, create it by running the signup flow (see 
 ### T-AUTH-05 · Login with wrong password
 **Steps**
 1. Navigate to `/login`
-2. Enter email: `test-a@kindred-test.dev`, password: `WrongPassword!`
+2. Enter email: `test-a@Lumen-test.dev`, password: `WrongPassword!`
 3. Submit
 
 **Expected**
@@ -399,11 +399,11 @@ _Requires Resend to be configured and `SUPABASE_SERVICE_ROLE_KEY` set in Vercel.
 **Steps**
 1. Log in as Account A
 2. Navigate to `/families/[Beal Family id]/settings`
-3. Enter email: `test-b@kindred-test.dev` in the invite field
+3. Enter email: `test-b@Lumen-test.dev` in the invite field
 4. Click "Send invite"
 
 **Expected**
-- Toast: "Invite sent to test-b@kindred-test.dev"
+- Toast: "Invite sent to test-b@Lumen-test.dev"
 - No error message
 
 ---

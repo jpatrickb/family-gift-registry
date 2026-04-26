@@ -2,7 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { GiftForm } from "@/components/gifts/gift-form"
-import { KindredIcon } from "@/components/shared/brand"
+import { LumenIcon } from "@/components/shared/brand"
 
 export default async function NewGiftPage() {
   const supabase = await createClient()
@@ -32,7 +32,7 @@ export default async function NewGiftPage() {
             marginBottom: 16,
           }}
         >
-          <KindredIcon name="users" size={22} />
+          <LumenIcon name="users" size={22} />
         </div>
         <h1 className="t-h1" style={{ margin: 0 }}>Join a family first</h1>
         <p className="t-body" style={{ marginTop: 10, color: "var(--ink-3)" }}>
@@ -63,8 +63,8 @@ export default async function NewGiftPage() {
           marginBottom: 20,
         }}
       >
-        <KindredIcon name="arrowLeft" size={14} />
-        My wishlist
+        <LumenIcon name="arrowLeft" size={14} />
+        My Lumen List
       </Link>
 
       <h1 className="t-display-sm" style={{ margin: 0 }}>Add a gift</h1>

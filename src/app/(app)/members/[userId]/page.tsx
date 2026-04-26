@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { GiftCard } from "@/components/gifts/gift-card"
-import { KindredIcon, initials, avatarTone } from "@/components/shared/brand"
+import { LumenIcon, initials, avatarTone } from "@/components/shared/brand"
 import type { GiftWithClaim } from "@/types"
 
 type Params = {
@@ -68,7 +68,7 @@ export default async function MemberWishlistPage({ params, searchParams }: Param
             marginBottom: 18,
           }}
         >
-          <KindredIcon name="arrowLeft" size={14} />
+          <LumenIcon name="arrowLeft" size={14} />
           Back to family
         </Link>
       )}
@@ -122,7 +122,7 @@ export default async function MemberWishlistPage({ params, searchParams }: Param
             flexShrink: 0,
           }}
         >
-          <KindredIcon name="sparkle" size={14} />
+          <LumenIcon name="sparkle" size={14} />
         </span>
         <div className="t-body-sm" style={{ color: "var(--ink-2)", flex: 1 }}>
           <strong style={{ color: "var(--ink)" }}>{firstName} can&apos;t see who claimed what.</strong> Pick

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { GiftTagMotif, KindredIcon, initials, avatarTone } from "@/components/shared/brand"
+import { GiftTagMotif, LumenIcon, initials, avatarTone } from "@/components/shared/brand"
 import { CopyInviteLink } from "@/components/family/copy-invite-link"
 
 type FamilyMemberRow = {
@@ -60,7 +60,7 @@ export default async function FamilyPage({ params }: Params) {
         <div style={{ position: "relative" }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             <span className="ds-badge ds-badge-primary">
-              <KindredIcon name="users" size={11} strokeWidth={2} />
+              <LumenIcon name="users" size={11} strokeWidth={2} />
               Family
             </span>
             <span className="t-meta" style={{ color: "var(--ink-3)", alignSelf: "center" }}>
@@ -75,7 +75,7 @@ export default async function FamilyPage({ params }: Params) {
             {isOwner && (
               <>
                 <Link href={`/families/${familyId}/settings`} className="ds-btn ds-btn-secondary ds-btn-sm">
-                  <KindredIcon name="settings" size={13} />
+                  <LumenIcon name="settings" size={13} />
                   Settings
                 </Link>
                 <CopyInviteLink link={`${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/join/${family.invite_code}`} />
@@ -137,7 +137,7 @@ export default async function FamilyPage({ params }: Params) {
                     style={{ width: "100%" }}
                   >
                     View {memberName.split(" ")[0]}&apos;s list
-                    <KindredIcon name="arrowRight" size={13} />
+                    <LumenIcon name="arrowRight" size={13} />
                   </Link>
                 )}
               </div>

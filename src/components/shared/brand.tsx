@@ -106,7 +106,7 @@ const ICON_PATHS: Record<IconName, React.ReactNode> = {
   star: <><path d="m12 3 2.6 5.5 6 .9-4.3 4.2 1 6-5.3-2.8L6.7 19.6l1-6L3.4 9.4l6-.9L12 3Z" /></>,
 }
 
-export function KindredIcon({
+export function LumenIcon({
   name,
   size = 16,
   strokeWidth = 1.5,

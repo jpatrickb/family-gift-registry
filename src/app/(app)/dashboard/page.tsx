@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { GiftTagMotif, KindredIcon, initials, avatarTone } from "@/components/shared/brand"
+import { GiftTagMotif, LumenIcon, initials, avatarTone } from "@/components/shared/brand"
 import type { Family, GiftClaim } from "@/types"
 
 type ClaimWithGift = GiftClaim & {
@@ -111,11 +111,11 @@ export default async function DashboardPage() {
           </p>
           <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
             <Link href="/gifts" className="ds-btn ds-btn-primary">
-              <KindredIcon name="gift" size={14} />
-              My wishlist
+              <LumenIcon name="gift" size={14} />
+              My Lumen List
             </Link>
             <Link href="/gifts/new" className="ds-btn ds-btn-secondary">
-              <KindredIcon name="plus" size={14} />
+              <LumenIcon name="plus" size={14} />
               Add a gift
             </Link>
           </div>
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
                   flexShrink: 0,
                 }}
               >
-                <KindredIcon name={s.icon} size={14} />
+                <LumenIcon name={s.icon} size={14} />
               </span>
             </div>
             <div
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
                     className="ds-btn ds-btn-ghost ds-btn-sm"
                   >
                     View
-                    <KindredIcon name="chevronRight" size={14} />
+                    <LumenIcon name="chevronRight" size={14} />
                   </Link>
                 </div>
               ))}
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
                         style={{ flexShrink: 0 }}
                       >
                         View list
-                        <KindredIcon name="chevronRight" size={14} />
+                        <LumenIcon name="chevronRight" size={14} />
                       </Link>
                     </div>
                   )
@@ -368,7 +368,7 @@ export default async function DashboardPage() {
                       flexShrink: 0,
                     }}
                   >
-                    <KindredIcon
+                    <LumenIcon
                       name={c.status === "purchased" ? "checkCircle" : "shoppingBag"}
                       size={14}
                     />

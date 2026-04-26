@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { KindredIcon } from "@/components/shared/brand"
+import { LumenIcon } from "@/components/shared/brand"
 
 export function CopyInviteLink({ link }: { link: string }) {
   const [copied, setCopied] = useState(false)
@@ -20,7 +20,7 @@ export function CopyInviteLink({ link }: { link: string }) {
       className="ds-btn ds-btn-secondary ds-btn-sm"
       onClick={copy}
     >
-      <KindredIcon name={copied ? "check" : "copy"} size={13} />
+      <LumenIcon name={copied ? "check" : "copy"} size={13} />
       {copied ? "Copied!" : "Copy invite link"}
     </button>
   )
