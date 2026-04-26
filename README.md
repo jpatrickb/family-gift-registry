@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Family Gift Registry
 
-## Getting Started
+A web app for families to share wishlists and coordinate gift purchases without spoiling surprises. Family members can see what others want and mark items as claimed or purchased — but the person who added the gift never sees who's buying what for them.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Email/password authentication
+- Create family groups; invite members by email or shareable link
+- Add gifts to your wishlist (title, description, price, URL, image)
+- View family members' wishlists and claim gifts
+- Surprise preservation: gift owners can't see claim status on their own gifts — enforced at the database level via RLS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Next.js 15** (App Router, TypeScript)
+- **Supabase** (Postgres + Auth + Row Level Security)
+- **Resend** (transactional email for invites)
+- **TailwindCSS + shadcn/ui**
+- **Vercel** (hosting)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Local setup
 
-## Learn More
+1. Clone the repo and install dependencies:
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. Copy `.env.example` to `.env.local` and fill in your credentials:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+   SUPABASE_SERVICE_ROLE_KEY=
+   RESEND_API_KEY=
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Apply the database migration in your Supabase project (SQL editor or CLI):
+   ```bash
+   supabase link --project-ref <your-project-ref>
+   supabase db push
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. Run the dev server:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## Codebase documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [`CODEBASE.md`](./CODEBASE.md) for a living description of the project structure, design decisions, and current state. This file is updated whenever changes are made to the app.
