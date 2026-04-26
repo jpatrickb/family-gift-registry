@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Instrument_Serif } from "next/font/google"
 import { Geist_Mono } from "next/font/google"
-import { Toaster } from "@/components/ui/sonner"
+import { ToasterClient } from "@/components/ui/toaster-client"
 import "./globals.css"
 
 const inter = Inter({
@@ -40,7 +40,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <Toaster />
+        <ToasterClient />
       </body>
     </html>
   )
