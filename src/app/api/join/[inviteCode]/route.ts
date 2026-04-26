@@ -5,21 +5,24 @@ import { createAdminClient } from "@/lib/supabase/admin"
 type Params = { params: Promise<{ inviteCode: string }> }
 
 export async function POST(_: Request, { params }: Params) {
-  const { inviteCode } = await params
+  const { inviteCode: inviteCodeRaw } = await params
+  const inviteCode = inviteCodeRaw.trim().toLowerCase()
+  if (!/^[a-z0-9]{12}$/.test(inviteCode)) {
+    return NextResponse.json({ error: "Invalid invite link" }, { status: 404 })
+  }
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
+  const admin = createAdminClient()
 
   const { data: familyRaw, error: familyError } = await admin
     .from("families")
     .select("id, name")
-    .eq("invite_code", inviteCode)
-    .single()
+    .ilike("invite_code", inviteCode)
+    .maybeSingle()
   const family = familyRaw as { id: string; name: string } | null
 
   if (familyError || !family) {

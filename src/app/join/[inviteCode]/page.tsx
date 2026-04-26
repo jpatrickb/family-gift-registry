@@ -6,27 +6,43 @@ import { JoinFamilyButton } from "@/components/family/join-family-button"
 type Params = { params: Promise<{ inviteCode: string }> }
 
 export default async function JoinPage({ params }: Params) {
-  const { inviteCode } = await params
+  const { inviteCode: inviteCodeRaw } = await params
+  const inviteCode = inviteCodeRaw.trim().toLowerCase()
+  const isValidCodeFormat = /^[a-z0-9]{12}$/.test(inviteCode)
   let family: { id: string; name: string } | null = null
+  let lookupFailed = false
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin = createAdminClient() as any
-    const { data: familyRaw } = await admin
+    const admin = createAdminClient()
+    const { data: familyRaw, error } = await admin
       .from("families")
       .select("id, name")
-      .eq("invite_code", inviteCode)
-      .single()
+      .ilike("invite_code", inviteCode)
+      .maybeSingle()
+    if (error) {
+      lookupFailed = true
+    }
     family = familyRaw as { id: string; name: string } | null
   } catch {
-    family = null
+    lookupFailed = true
   }
 
   if (!family) {
+    const heading = !isValidCodeFormat
+      ? "Invalid link"
+      : lookupFailed
+        ? "Invite lookup unavailable"
+        : "Invalid link"
+    const description = !isValidCodeFormat
+      ? "This invite code format is invalid."
+      : lookupFailed
+        ? "We couldn't validate this invite link right now. Please try again."
+        : "This invite link doesn't exist."
+
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center space-y-2">
-          <h1 className="text-xl font-semibold">Invalid link</h1>
-          <p className="text-gray-600">This invite link doesn&apos;t exist.</p>
+          <h1 className="text-xl font-semibold">{heading}</h1>
+          <p className="text-gray-600">{description}</p>
           <Link href="/login" className="text-sm underline">
             Go to login
           </Link>

@@ -170,6 +170,8 @@ Route groups:
 
 **Why the admin client is used for invite acceptance**: Invite tokens are validated by the service role to bypass RLS. The normal user client can't look up an invite by token without already being authenticated as the invitee, which creates a chicken-and-egg problem for new users.
 
+**Why join codes are normalized**: `/join/[inviteCode]` now trims and lowercases codes before lookup and uses case-insensitive matching. This prevents false "invalid link" states when shared codes are copied with casing differences.
+
 **Why shadcn/ui v4 components don't support `asChild`**: v4 uses Base UI primitives instead of Radix UI. The `Button` component was replaced with a Radix-based implementation to restore `asChild` support. The `DropdownMenu` trigger and items use `onClick` + `router.push()` for navigation instead.
 
 **Why `as any` casts exist in API routes**: The hand-written `database.types.ts` placeholder didn't fully satisfy supabase-js v2 type inference. These casts are in API route files only. Now that real generated types are in place they're safe to remove incrementally.

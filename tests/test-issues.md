@@ -110,6 +110,32 @@
 - **Observed:** Join route renders `Invalid link` with text `This invite link doesn't exist.`
 - **Notes:** Reproduced directly by navigating to the exact generated URL.
 
+### T-AUTH-04 - Login on production domain with updated Account A
+- **URL:** `https://lumenlist.app/login`
+- **Credentials used:** `jpatrickbeall@gmail.com` / `TestPassword1!`
+- **Expected:** Successful login to `/dashboard`.
+- **Observed:** Remains on `/login` with inline alert `Email not confirmed`.
+- **Impact:** Blocks authenticated sections when using the newly documented Account A.
+
+### T-AUTH-04 - Login on production domain with updated Account B
+- **URL:** `https://lumenlist.app/login`
+- **Credentials used:** `patrickbeal@techforceadvisors.com` / `TestPassword1!`
+- **Expected:** Successful login to `/dashboard`.
+- **Observed:** Remains on `/login` with inline alert `Invalid login credentials`.
+- **Impact:** Blocks all multi-user claim/invite/isolation tests with the newly documented Account B.
+
+### T-FAM-03 / T-FAM-04 - Shareable invite code is generated but join route rejects it
+- **Family ID:** `707aac55-3d00-4644-93a0-2231288ebe9b` (`Beal Family`)
+- **Invite code from DB:** `e0e6018fd8c2` (queried from `public.families.invite_code`)
+- **Join URL tested:** `https://lumenlist.app/join/e0e6018fd8c2`
+- **Expected:** Valid join page for that family (and join flow should proceed for Account B).
+- **Observed:** `Invalid link` / `This invite link doesn't exist.`
+- **Impact:** Blocks Account B joining Account A family via shareable link, so multi-user claim/privacy tests cannot proceed.
+
+### Regression retest status (now passing)
+- **T-AUTH-04 Account A:** `jpatrickbeall@gmail.com` now signs in successfully and lands on `/dashboard`.
+- **T-AUTH-04 Account B:** `patrickbeal@techforceadvisors.com` now signs in successfully and lands on `/dashboard`.
+
 ### T-FAM-01 - Create a family (post profile-backfill + create_family hardening)
 - **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
 - **Expected:** Submit redirects to `/families/[id]` and creates family.
