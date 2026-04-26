@@ -16,15 +16,17 @@ export async function POST(request: Request) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: family, error } = await (supabase as any)
-    .from("families")
-    .insert({ name: parsed.data.name, created_by: user.id })
-    .select()
-    .single()
+  const { data: familyId, error } = await (supabase as any).rpc("create_family", {
+    p_name: parsed.data.name,
+  })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ family }, { status: 201 })
+  if (!familyId) {
+    return NextResponse.json({ error: "Failed to create family" }, { status: 500 })
+  }
+
+  return NextResponse.json({ family: { id: familyId } }, { status: 201 })
 }

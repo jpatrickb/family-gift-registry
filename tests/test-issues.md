@@ -78,3 +78,9 @@
 - **URL:** `https://family-gift-registry-zeta.vercel.app/this-page-does-not-exist`
 - **Expected:** Custom/standard 404 page.
 - **Observed:** Still renders generic error UI with `Show Details` and `Reload` buttons while authenticated.
+
+### T-FAM-01 - Create a family (latest retest)
+- **URL:** `https://family-gift-registry-zeta.vercel.app/families/new`
+- **Expected:** Submit redirects to `/families/[id]` and creates family.
+- **Observed:** Still no redirect; inline alert now shows: `new row violates row-level security policy for table "families"`.
+- **Notes:** Error signature changed from prior `family_members` recursion to direct `families` RLS rejection.
