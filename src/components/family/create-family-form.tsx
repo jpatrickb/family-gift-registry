@@ -20,6 +20,7 @@ import { createFamilySchema, type CreateFamilyInput } from "@/lib/validations"
 export function CreateFamilyForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<CreateFamilyInput>({
     resolver: zodResolver(createFamilySchema),
@@ -28,6 +29,7 @@ export function CreateFamilyForm() {
 
   async function onSubmit(data: CreateFamilyInput) {
     setLoading(true)
+    setSubmitError(null)
     const res = await fetch("/api/families", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,11 +37,14 @@ export function CreateFamilyForm() {
     })
     const json = await res.json()
     if (!res.ok) {
-      toast.error("Failed to create family")
+      const message = json.error ?? "Failed to create family"
+      toast.error(message)
+      setSubmitError(message)
       setLoading(false)
       return
     }
-    router.push(`/families/${json.family.id}`)
+    router.replace(`/families/${json.family.id}`)
+    router.refresh()
   }
 
   return (
@@ -61,6 +66,11 @@ export function CreateFamilyForm() {
         <Button type="submit" disabled={loading}>
           {loading ? "Creating…" : "Create family"}
         </Button>
+        {submitError && (
+          <p className="text-sm text-red-600" role="alert">
+            {submitError}
+          </p>
+        )}
       </form>
     </Form>
   )

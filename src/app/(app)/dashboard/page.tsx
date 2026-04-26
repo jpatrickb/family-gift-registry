@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { GiftTagMotif, LumenIcon, initials, avatarTone } from "@/components/shared/brand"
+import { DashboardGreeting } from "@/components/dashboard/dashboard-greeting"
 import type { Family, GiftClaim } from "@/types"
 
 type ClaimWithGift = GiftClaim & {
@@ -13,13 +14,6 @@ type MemberWithProfile = {
   family_id: string
   families: { name: string } | null
   profiles: { name: string } | null
-}
-
-function greeting(): string {
-  const h = new Date().getHours()
-  if (h < 12) return "Good morning"
-  if (h < 18) return "Good afternoon"
-  return "Good evening"
 }
 
 export default async function DashboardPage() {
@@ -38,7 +32,11 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single()
   const profile = profileRaw as { name: string } | null
-  const firstName = profile?.name?.split(" ")[0] ?? "there"
+  const fallbackName =
+    (typeof user.user_metadata?.name === "string" && user.user_metadata.name.trim()) ||
+    user.email?.split("@")[0] ||
+    "there"
+  const firstName = profile?.name?.split(" ")[0] || fallbackName
 
   const { data: membershipsRaw } = await sb
     .from("family_members")
@@ -100,10 +98,7 @@ export default async function DashboardPage() {
           <div className="t-eyebrow" style={{ color: "oklch(0.42 0.14 285)", marginBottom: 12 }}>
             {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           </div>
-          <h1 className="t-display" style={{ margin: 0 }}>
-            {greeting()},{" "}
-            <em style={{ fontStyle: "italic", color: "oklch(0.40 0.16 285)" }}>{firstName}</em>.
-          </h1>
+          <DashboardGreeting firstName={firstName} />
           <p className="t-body" style={{ marginTop: 10, color: "var(--ink-2)" }}>
             {giftCount === 0
               ? "Your wishlist is empty. Add a few things you'd love."

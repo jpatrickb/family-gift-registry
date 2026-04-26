@@ -32,18 +32,20 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Routes that don't require auth
-  const publicPaths = [
-    "/login",
-    "/signup",
-    "/invite",
-    "/join",
-    "/api/auth",
-    "/api/invite",
+  // Protect only known authenticated app areas so unknown routes still render 404.
+  const protectedPaths = [
+    "/dashboard",
+    "/account",
+    "/gifts",
+    "/families",
+    "/members",
+    "/api/families",
+    "/api/gifts",
+    "/api/join",
   ]
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p))
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p))
 
-  if (!user && !isPublic && pathname !== "/") {
+  if (!user && isProtected) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
     url.searchParams.set("next", pathname)

@@ -67,7 +67,7 @@ export async function Nav({ userId }: { userId: string }) {
             {[
               { href: "/dashboard", label: "Home", icon: "home" as const },
               { href: "/gifts", label: "My Lumen List", icon: "gift" as const },
-              { href: "/dashboard", label: "Families", icon: "users" as const },
+              { href: "/families", label: "Families", icon: "users" as const },
             ].map((item) => (
               <Link
                 key={item.label}

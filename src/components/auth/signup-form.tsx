@@ -22,6 +22,7 @@ export function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -30,6 +31,7 @@ export function SignupForm() {
 
   async function onSubmit(data: SignupInput) {
     setLoading(true)
+    setSubmitError(null)
     const supabase = getSupabaseBrowserClient()
     const { error } = await supabase.auth.signUp({
       email: data.email,
@@ -40,11 +42,24 @@ export function SignupForm() {
     })
     if (error) {
       toast.error(error.message)
+      setSubmitError(error.message)
       setLoading(false)
       return
     }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+    if (signInError) {
+      toast.error(signInError.message)
+      setSubmitError(signInError.message)
+      setLoading(false)
+      return
+    }
+
     const next = searchParams.get("next") ?? "/dashboard"
-    router.push(next)
+    router.replace(next)
     router.refresh()
   }
 
@@ -93,6 +108,11 @@ export function SignupForm() {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Creating account…" : "Create account"}
         </Button>
+        {submitError && (
+          <p className="text-sm text-red-600" role="alert">
+            {submitError}
+          </p>
+        )}
       </form>
     </Form>
   )

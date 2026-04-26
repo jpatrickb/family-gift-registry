@@ -104,6 +104,7 @@ Records who is buying a gift. The one-row-per-gift UNIQUE constraint prevents do
 /login                   → email/password sign in
 /signup                  → create account
 /dashboard               → family list + own wishlist summary
+/families                → list all families for the current user
 /families/new            → create a family
 /families/[familyId]     → family hub: member cards, links to wishlists
 /families/[familyId]/settings  → invite by email, copy shareable link
@@ -146,12 +147,14 @@ Route groups:
 | File | Purpose |
 |---|---|
 | `middleware.ts` | Session refresh + auth redirect for all routes |
+| `src/lib/supabase/middleware.ts` | Protects authenticated route prefixes while allowing unknown paths to render 404 UI |
 | `src/lib/supabase/server.ts` | Supabase client for Server Components / Route Handlers |
 | `src/lib/supabase/client.ts` | Supabase client for Client Components (singleton) |
 | `src/lib/supabase/admin.ts` | Service role client — bypasses RLS; server-only |
 | `src/lib/supabase/middleware.ts` | Supabase client for middleware (reads/writes cookies on req/res) |
 | `src/lib/resend.ts` | Resend email sender |
 | `src/lib/validations.ts` | Zod schemas for all forms |
+| `src/components/dashboard/dashboard-greeting.tsx` | Client-side local-time greeting for dashboard hero |
 | `src/types/database.types.ts` | **Generated** — run `npx supabase gen types typescript` after schema changes |
 | `src/types/index.ts` | Type aliases (`Gift`, `Profile`, etc.) |
 | `supabase/migrations/0001_initial_schema.sql` | Full DB schema, RLS policies, triggers |
@@ -167,6 +170,8 @@ Route groups:
 **Why shadcn/ui v4 components don't support `asChild`**: v4 uses Base UI primitives instead of Radix UI. The `Button` component was replaced with a Radix-based implementation to restore `asChild` support. The `DropdownMenu` trigger and items use `onClick` + `router.push()` for navigation instead.
 
 **Why `as any` casts exist in API routes**: The hand-written `database.types.ts` placeholder didn't fully satisfy supabase-js v2 type inference. These casts are in API route files only. Now that real generated types are in place they're safe to remove incrementally.
+
+**Why dashboard greeting is client-rendered**: The greeting period (morning/afternoon/evening) is computed in a Client Component so it reflects the viewer's local time rather than the server timezone.
 
 ---
 
@@ -185,6 +190,8 @@ Route groups:
 ## Testing
 
 End-to-end test plan: [`tests/test-plan.md`](./tests/test-plan.md)
+
+Manual execution issue tracker: [`tests/test-issues.md`](./tests/test-issues.md)
 
 Covers 8 sections across ~35 scenarios: auth, family management, invite flows, gift CRUD, gift claiming (including surprise-preservation verification), multi-family RLS isolation, navigation, and edge cases. Designed for execution by an AI agent using Playwright MCP tools. No automated test runner is wired up yet — tests are run on demand by sending an agent to `tests/test-plan.md`.
 

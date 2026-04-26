@@ -12,17 +12,21 @@ type InviteData = {
 
 export default async function InvitePage({ params }: Params) {
   const { token } = await params
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
-
-  const { data: inviteRaw } = await admin
-    .from("family_invites")
-    .select("*, families(name), profiles!invited_by(name)")
-    .eq("token", token)
-    .is("accepted_at", null)
-    .gt("expires_at", new Date().toISOString())
-    .single()
-  const invite = inviteRaw as InviteData | null
+  let invite: InviteData | null = null
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createAdminClient() as any
+    const { data: inviteRaw } = await admin
+      .from("family_invites")
+      .select("*, families(name), profiles!invited_by(name)")
+      .eq("token", token)
+      .is("accepted_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .single()
+    invite = inviteRaw as InviteData | null
+  } catch {
+    invite = null
+  }
 
   if (!invite) {
     return (

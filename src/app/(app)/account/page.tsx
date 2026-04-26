@@ -17,6 +17,13 @@ export default async function AccountPage() {
     .single()
   const profile = data as Pick<Profile, "name" | "email" | "avatar_url"> | null
 
+  const fallbackName =
+    (typeof user.user_metadata?.name === "string" && user.user_metadata.name.trim()) ||
+    user.email?.split("@")[0] ||
+    "—"
+  const displayName = profile?.name?.trim() || fallbackName
+  const displayEmail = profile?.email || user.email || "—"
+
   return (
     <div className="max-w-lg space-y-6">
       <h1 className="text-2xl font-bold">Account</h1>
@@ -27,11 +34,11 @@ export default async function AccountPage() {
         <CardContent className="space-y-2 text-sm">
           <div>
             <span className="text-gray-500">Name</span>
-            <p className="font-medium">{profile?.name || "—"}</p>
+            <p className="font-medium">{displayName}</p>
           </div>
           <div>
             <span className="text-gray-500">Email</span>
-            <p className="font-medium">{profile?.email}</p>
+            <p className="font-medium">{displayEmail}</p>
           </div>
         </CardContent>
       </Card>

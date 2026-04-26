@@ -7,15 +7,19 @@ type Params = { params: Promise<{ inviteCode: string }> }
 
 export default async function JoinPage({ params }: Params) {
   const { inviteCode } = await params
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const admin = createAdminClient() as any
-
-  const { data: familyRaw } = await admin
-    .from("families")
-    .select("id, name")
-    .eq("invite_code", inviteCode)
-    .single()
-  const family = familyRaw as { id: string; name: string } | null
+  let family: { id: string; name: string } | null = null
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = createAdminClient() as any
+    const { data: familyRaw } = await admin
+      .from("families")
+      .select("id, name")
+      .eq("invite_code", inviteCode)
+      .single()
+    family = familyRaw as { id: string; name: string } | null
+  } catch {
+    family = null
+  }
 
   if (!family) {
     return (
