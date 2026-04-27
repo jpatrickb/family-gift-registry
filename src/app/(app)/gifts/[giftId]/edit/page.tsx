@@ -12,20 +12,14 @@ export default async function EditGiftPage({ params }: Params) {
   } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  const [{ data: gift }, { data: families }] = await Promise.all([
-    supabase.from("gifts").select("*").eq("id", giftId).eq("owner_id", user.id).single(),
-    supabase
-      .from("families")
-      .select("id, name, family_members!inner(user_id)")
-      .eq("family_members.user_id", user.id),
-  ])
+  const { data: gift } = await supabase.from("gifts").select("*").eq("id", giftId).eq("owner_id", user.id).single()
 
   if (!gift) notFound()
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Edit gift</h1>
-      <GiftForm families={families ?? []} gift={gift} />
+      <GiftForm gift={gift} />
     </div>
   )
 }

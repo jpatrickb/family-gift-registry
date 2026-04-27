@@ -12,20 +12,11 @@ export default async function MyGiftsPage() {
   } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sb = supabase as any
-
   const { data: gifts } = await supabase
     .from("gifts")
     .select("*")
     .eq("owner_id", user.id)
     .order("sort_order", { ascending: true })
-
-  const { data: familiesRaw } = await sb
-    .from("families")
-    .select("id, name, family_members!inner(user_id)")
-    .eq("family_members.user_id", user.id)
-  const families: { id: string; name: string }[] = familiesRaw ?? []
 
   const giftList = (gifts ?? []) as Gift[]
 
@@ -100,7 +91,7 @@ export default async function MyGiftsPage() {
           >
             {[
               { icon: "tag" as const, t: "Add a few items", d: "Books, kitchen things, anything." },
-              { icon: "users" as const, t: "Pick a family", d: "They'll see your list." },
+              { icon: "users" as const, t: "Share with families", d: "All your families will see your list." },
               { icon: "heart" as const, t: "Surprise stays in", d: "You won't see who got what." },
             ].map((s, i) => (
               <div
@@ -138,48 +129,6 @@ export default async function MyGiftsPage() {
         </div>
       ) : (
         <>
-          {/* Filter tabs */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 18,
-              flexWrap: "wrap",
-              gap: 12,
-            }}
-          >
-            <div style={{ display: "flex", gap: 4 }}>
-              {[
-                { id: "all", label: "All", count: giftList.length },
-                ...families.map((f) => ({
-                  id: f.id,
-                  label: f.name,
-                  count: giftList.filter((g) => g.family_id === f.id).length,
-                })),
-              ].map((t) => (
-                <span
-                  key={t.id}
-                  style={{
-                    padding: "7px 13px",
-                    border: "1px solid",
-                    borderColor: t.id === "all" ? "var(--hairline-strong)" : "transparent",
-                    background: t.id === "all" ? "var(--surface)" : "transparent",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: t.id === "all" ? "var(--ink)" : "var(--ink-3)",
-                    cursor: "default",
-                    userSelect: "none",
-                  }}
-                >
-                  {t.label}{" "}
-                  <span style={{ marginLeft: 4, color: "var(--ink-4)", fontWeight: 400 }}>{t.count}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-
           {/* Gift grid */}
           <div
             style={{

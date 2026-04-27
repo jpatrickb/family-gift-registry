@@ -37,10 +37,6 @@ export default async function MemberWishlistPage({ params, searchParams }: Param
     .eq("owner_id", userId)
     .order("sort_order", { ascending: true })
 
-  if (familyId) {
-    giftsQuery = giftsQuery.eq("family_id", familyId)
-  }
-
   const { data: giftsRaw } = await giftsQuery
   const gifts = (giftsRaw ?? []) as GiftWithClaim[]
 

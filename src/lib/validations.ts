@@ -43,7 +43,6 @@ export const giftSchema = z.object({
       (val) => !val || val.startsWith("http"),
       "Image URL must start with http"
     ),
-  family_id: z.string().uuid("Invalid family"),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

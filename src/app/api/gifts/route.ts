@@ -4,7 +4,6 @@ import { giftSchema } from "@/lib/validations"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const familyId = searchParams.get("familyId")
   const userId = searchParams.get("userId")
 
   const supabase = await createClient()
@@ -21,14 +20,12 @@ export async function GET(request: Request) {
       .from("gifts")
       .select("*, gift_claims(*)")
       .eq("owner_id", userId)
-    if (familyId) q = q.eq("family_id", familyId)
     const result = await q.order("sort_order", { ascending: true })
     giftsData = result.data
     giftsError = result.error
   } else {
     // Viewing own gifts — no claim data
     let q = supabase.from("gifts").select("*").eq("owner_id", user.id)
-    if (familyId) q = q.eq("family_id", familyId)
     const result = await q.order("sort_order", { ascending: true })
     giftsData = result.data
     giftsError = result.error
@@ -62,7 +59,6 @@ export async function POST(request: Request) {
     .from("gifts")
     .insert({
       owner_id: user.id,
-      family_id: parsed.data.family_id,
       title: parsed.data.title,
       description: parsed.data.description ?? null,
       price: parsed.data.price ? parseFloat(parsed.data.price) : null,

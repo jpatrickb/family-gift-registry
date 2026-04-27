@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       families: {
@@ -183,7 +208,6 @@ export type Database = {
           created_at: string
           description: string | null
           external_id: string | null
-          family_id: string
           id: string
           image_url: string | null
           owner_id: string
@@ -198,7 +222,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           external_id?: string | null
-          family_id: string
           id?: string
           image_url?: string | null
           owner_id: string
@@ -213,7 +236,6 @@ export type Database = {
           created_at?: string
           description?: string | null
           external_id?: string | null
-          family_id?: string
           id?: string
           image_url?: string | null
           owner_id?: string
@@ -225,13 +247,6 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "gifts_family_id_fkey"
-            columns: ["family_id"]
-            isOneToOne: false
-            referencedRelation: "families"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "gifts_owner_id_fkey"
             columns: ["owner_id"]
@@ -273,7 +288,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_family: { Args: { p_name: string }; Returns: string }
+      is_family_member: {
+        Args: { _family_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
@@ -402,6 +421,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

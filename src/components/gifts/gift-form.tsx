@@ -10,11 +10,10 @@ import type { Gift } from "@/types"
 import { giftSchema, type GiftInput } from "@/lib/validations"
 
 interface GiftFormProps {
-  families: { id: string; name: string }[]
   gift?: Gift
 }
 
-export function GiftForm({ families, gift }: GiftFormProps) {
+export function GiftForm({ gift }: GiftFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [pasteUrl, setPasteUrl] = useState("")
@@ -28,11 +27,8 @@ export function GiftForm({ families, gift }: GiftFormProps) {
       price: gift?.price?.toString() ?? "",
       url: gift?.url ?? "",
       image_url: gift?.image_url ?? "",
-      family_id: gift?.family_id ?? families[0]?.id ?? "",
     },
   })
-
-  const selectedFamilyId = form.watch("family_id")
 
   async function onSubmit(data: GiftInput) {
     setLoading(true)
@@ -108,48 +104,6 @@ export function GiftForm({ families, gift }: GiftFormProps) {
       )}
 
       <div style={{ display: "grid", gap: 18 }}>
-        {/* Family selector */}
-        <div>
-          <label className="ds-label">Which family is this for?</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {families.map((f) => {
-              const isSelected = selectedFamilyId === f.id
-              return (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => form.setValue("family_id", f.id)}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 7,
-                    padding: "8px 14px",
-                    borderRadius: 999,
-                    fontFamily: "inherit",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    border: "1px solid",
-                    background: isSelected ? "var(--primary-soft)" : "var(--surface)",
-                    borderColor: isSelected ? "oklch(0.78 0.10 285)" : "var(--hairline-strong)",
-                    color: isSelected ? "oklch(0.36 0.16 285)" : "var(--ink-2)",
-                    transition: "all 120ms ease",
-                  }}
-                >
-                  {isSelected && <LumenIcon name="check" size={13} />}
-                  {f.name}
-                </button>
-              )
-            })}
-          </div>
-          <p className="ds-help">Only members of this family will see it.</p>
-          {form.formState.errors.family_id && (
-            <p className="ds-help" style={{ color: "var(--destructive)" }}>
-              {form.formState.errors.family_id.message}
-            </p>
-          )}
-        </div>
-
         {/* Title */}
         <div>
           <label className="ds-label">Title</label>
