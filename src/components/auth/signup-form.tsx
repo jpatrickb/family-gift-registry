@@ -33,14 +33,17 @@ export function SignupForm() {
     setLoading(true)
     setSubmitError(null)
     const supabase = getSupabaseBrowserClient()
-    const appUrl =
-      (process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin).replace(/\/$/, "")
+    const origin = window.location.origin
+    const next = searchParams.get("next") ?? "/dashboard"
+    // Confirmation link must hit /api/auth/callback so Supabase can exchange
+    // the code for a session. Pass next so the user lands in the right place.
+    const emailRedirectTo = `${origin}/api/auth/callback?next=${encodeURIComponent(next)}`
     const { data: signupData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: {
         data: { name: data.name },
-        emailRedirectTo: `${appUrl}/login`,
+        emailRedirectTo,
       },
     })
     if (error) {
@@ -56,7 +59,6 @@ export function SignupForm() {
       return
     }
 
-    const next = searchParams.get("next") ?? "/dashboard"
     router.replace(next)
     router.refresh()
   }
