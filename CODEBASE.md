@@ -135,6 +135,7 @@ Route groups:
 | `/api/families/[familyId]/invite` | POST | send Resend email invite |
 | `/api/families/[familyId]/members` | GET, DELETE | list or remove members |
 | `/api/gifts` | GET, POST | GET supports `?userId=` and `?familyId=` params |
+| `/api/gifts/scrape` | POST | Server-side scrape of a product URL → `{ title, image_url, price, description }` (auth-gated, SSRF-guarded) |
 | `/api/gifts/[giftId]` | GET, PATCH, DELETE | |
 | `/api/gifts/[giftId]/claim` | POST, PATCH, DELETE | claim/unclaim/mark purchased |
 | `/api/invite/[token]` | POST | accept email invite (uses admin client) |
@@ -153,6 +154,7 @@ Route groups:
 | `src/lib/supabase/admin.ts` | Service role client — bypasses RLS; server-only |
 | `src/lib/supabase/middleware.ts` | Supabase client for middleware (reads/writes cookies on req/res) |
 | `src/lib/resend.ts` | Resend email sender |
+| `src/lib/scrape.ts` | Server-only product-page scraper: SSRF guard + Open Graph/Twitter/meta-tag extraction via `cheerio` |
 | `src/lib/validations.ts` | Zod schemas for all forms |
 | `src/components/dashboard/dashboard-greeting.tsx` | Client-side local-time greeting for dashboard hero |
 | `src/types/database.types.ts` | **Generated** — run `npx supabase gen types typescript` after schema changes |
@@ -177,6 +179,10 @@ Route groups:
 **Why `as any` casts exist in API routes**: The hand-written `database.types.ts` placeholder didn't fully satisfy supabase-js v2 type inference. These casts are in API route files only. Now that real generated types are in place they're safe to remove incrementally.
 
 **Why dashboard greeting is client-rendered**: The greeting period (morning/afternoon/evening) is computed in a Client Component so it reflects the viewer's local time rather than the server timezone.
+
+**Why URL scraping runs server-side**: The "Auto-fill" bar on the add-gift form posts the pasted URL to `/api/gifts/scrape`, which fetches the page and parses Open Graph / Twitter Card / standard meta tags with `cheerio`. Fetching from the browser is blocked by CORS on most retail sites, so the fetch must happen server-side. Scraping is best-effort: JS-only or bot-blocked pages return partial/no data, and the form always falls back to manual entry (the pasted link is still saved). The route guards against SSRF by resolving the hostname and rejecting loopback/private/link-local/cloud-metadata addresses, and caps fetch time (8s) and body size (2 MB).
+
+**Why `images.unoptimized` is set**: Scraped product images come from arbitrary retailer domains that can't be predicted, so a `remotePatterns` allowlist would be too brittle. `next.config.ts` sets `images.unoptimized: true` so `next/image` serves any external image as-is (Next otherwise `400`s images from unconfigured hosts). Trade-off: Next's image optimizer/proxy is skipped for all images.
 
 **Why `is_family_member()` exists**: querying `family_members` inside the `family_members` SELECT policy caused PostgreSQL RLS recursion (`infinite recursion detected in policy for relation "family_members"`). The SECURITY DEFINER helper lets policies check membership without recursive policy evaluation.
 
@@ -212,5 +218,5 @@ Covers 8 sections across ~35 scenarios: auth, family management, invite flows, g
 
 ## Planned / future features
 
-- Chrome extension to scrape gift details from product pages (schema has `source` and `external_id` columns ready)
+- Chrome extension to scrape gift details from product pages (schema has `source` and `external_id` columns ready). Note: server-side URL scraping now exists via `/api/gifts/scrape` (see "Why URL scraping runs server-side"); a Chrome extension would still help on sites that block server-side fetches.
 - Google Sheets sync (same columns)
