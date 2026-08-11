@@ -1,6 +1,6 @@
 import { lookup } from "node:dns/promises"
 import { isIP } from "node:net"
-import { load } from "cheerio"
+import { load, type CheerioAPI } from "cheerio"
 
 export interface ScrapedGift {
   title: string | null
@@ -136,9 +136,74 @@ function firstText(...vals: (string | undefined | null)[]): string | null {
   return null
 }
 
+interface SiteExtract {
+  title?: string | null
+  image?: string | null
+  price?: string | null
+}
+
+/** True for amazon.com and its regional domains, plus amzn.to short links. */
+function isAmazonHost(hostname: string): boolean {
+  return /(^|\.)(amazon\.[a-z.]+|amzn\.[a-z.]+)$/i.test(hostname)
+}
+
+/**
+ * Amazon's `data-a-dynamic-image` attribute is a JSON map of image URL → [w, h].
+ * Returns the URL with the greatest width, or null if it can't be parsed.
+ */
+function largestDynamicImage(json: string | undefined): string | null {
+  if (!json) return null
+  try {
+    const map = JSON.parse(json) as Record<string, [number, number]>
+    let best: string | null = null
+    let bestWidth = -1
+    for (const [imgUrl, dims] of Object.entries(map)) {
+      const width = Array.isArray(dims) ? dims[0] : 0
+      if (width > bestWidth) {
+        bestWidth = width
+        best = imgUrl
+      }
+    }
+    return best
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Amazon product pages ship generic/near-empty Open Graph tags but hold the
+ * real title and image in the DOM, so we read those directly. Price is usually
+ * lazy-loaded via a later AJAX call and is absent from the initial HTML — we
+ * grab it only when present and otherwise leave it for manual entry.
+ */
+function extractAmazon($: CheerioAPI): SiteExtract {
+  const title = $("#productTitle").first().text().trim() || null
+
+  const landing = $("#landingImage, #imgBlkFront, #main-image, #ebooksImgBlkFront").first()
+  const image =
+    landing.attr("data-old-hires")?.trim() ||
+    largestDynamicImage(landing.attr("data-a-dynamic-image")) ||
+    landing.attr("src")?.trim() ||
+    null
+
+  const price =
+    $("#corePriceDisplay_desktop_feature_div span.a-offscreen").first().text().trim() ||
+    $("#corePrice_feature_div span.a-offscreen").first().text().trim() ||
+    $("#apex_desktop span.a-offscreen").first().text().trim() ||
+    $("span.a-price span.a-offscreen").first().text().trim() ||
+    $("#priceblock_ourprice, #priceblock_dealprice, #priceblock_saleprice")
+      .first()
+      .text()
+      .trim() ||
+    null
+
+  return { title, image, price }
+}
+
 /**
  * Fetches a product page and extracts a best-effort title, image, price, and
- * description from Open Graph / Twitter Card / standard meta tags.
+ * description. Uses site-specific extraction for known retailers (currently
+ * Amazon) and falls back to Open Graph / Twitter Card / standard meta tags.
  */
 export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   const url = await assertSafeUrl(rawUrl)
@@ -180,9 +245,19 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   const html = await readCapped(res)
   const $ = load(html)
 
+  // Prefer the final (post-redirect) host so amzn.to short links are detected.
+  let finalHost = url.hostname
+  try {
+    if (res.url) finalHost = new URL(res.url).hostname
+  } catch {
+    /* keep original host */
+  }
+  const site: SiteExtract = isAmazonHost(finalHost) ? extractAmazon($) : {}
+
   const meta = (selector: string) => $(selector).attr("content")?.trim()
 
   const title = firstText(
+    site.title,
     meta('meta[property="og:title"]'),
     meta('meta[name="twitter:title"]'),
     meta('meta[name="title"]'),
@@ -191,6 +266,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   )
 
   const rawImage = firstText(
+    site.image,
     meta('meta[property="og:image:secure_url"]'),
     meta('meta[property="og:image:url"]'),
     meta('meta[property="og:image"]'),
@@ -206,6 +282,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   )
 
   const rawPrice = firstText(
+    site.price,
     meta('meta[property="product:price:amount"]'),
     meta('meta[property="og:price:amount"]'),
     meta('meta[itemprop="price"]'),
