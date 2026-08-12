@@ -285,9 +285,12 @@ function largestDynamicImage(json: string | undefined): string | null {
 
 /**
  * Amazon product pages ship generic/near-empty Open Graph tags but hold the
- * real title and image in the DOM, so we read those directly. Price is usually
- * lazy-loaded via a later AJAX call and is absent from the initial HTML — we
- * grab it only when present and otherwise leave it for manual entry.
+ * real title and image in the DOM, so we read those directly. `og:description`
+ * is also generic (literally just "Amazon"), so description comes from the
+ * standard `meta[name=description]` tag instead, which carries real per-product
+ * copy. Price is usually lazy-loaded via a later AJAX call and is absent from
+ * the initial HTML — we grab it only when present and otherwise leave it for
+ * manual entry.
  */
 function extractAmazon($: CheerioAPI): SiteExtract {
   const title = $("#productTitle").first().text().trim() || null
@@ -310,7 +313,9 @@ function extractAmazon($: CheerioAPI): SiteExtract {
       .trim() ||
     null
 
-  return { title, image, price }
+  const description = $('meta[name="description"]').attr("content")?.trim() || null
+
+  return { title, image, price, description }
 }
 
 /**
@@ -382,6 +387,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
 
   // Prefer the concise OG/meta description over JSON-LD's (often very long) one.
   const rawDescription = firstText(
+    site.description,
     meta('meta[property="og:description"]'),
     meta('meta[name="twitter:description"]'),
     meta('meta[name="description"]'),
