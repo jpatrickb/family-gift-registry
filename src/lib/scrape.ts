@@ -140,6 +140,82 @@ interface SiteExtract {
   title?: string | null
   image?: string | null
   price?: string | null
+  description?: string | null
+}
+
+/** Pulls the first usable image URL out of a schema.org `image` value. */
+function jsonLdImage(img: unknown): string | null {
+  if (!img) return null
+  if (typeof img === "string") return img.trim() || null
+  if (Array.isArray(img)) {
+    for (const item of img) {
+      const found = jsonLdImage(item)
+      if (found) return found
+    }
+    return null
+  }
+  if (typeof img === "object") {
+    const url = (img as Record<string, unknown>).url ?? (img as Record<string, unknown>)["@id"]
+    return typeof url === "string" ? url.trim() || null : null
+  }
+  return null
+}
+
+/** Pulls a price out of a schema.org `offers` value (Offer / AggregateOffer). */
+function jsonLdPrice(offers: unknown): string | null {
+  if (!offers) return null
+  const list = Array.isArray(offers) ? offers : [offers]
+  for (const offer of list) {
+    if (!offer || typeof offer !== "object") continue
+    const o = offer as Record<string, unknown>
+    const spec = (o.priceSpecification as Record<string, unknown>) ?? {}
+    const p = o.price ?? o.lowPrice ?? spec.price ?? spec.lowPrice
+    if (p != null && p !== "") return String(p)
+  }
+  return null
+}
+
+/** Recursively collects schema.org Product nodes from parsed JSON-LD. */
+function collectProducts(node: unknown, out: Record<string, unknown>[]): void {
+  if (!node || typeof node !== "object") return
+  if (Array.isArray(node)) {
+    for (const n of node) collectProducts(n, out)
+    return
+  }
+  const obj = node as Record<string, unknown>
+  const type = obj["@type"]
+  const isProduct =
+    type === "Product" || (Array.isArray(type) && type.includes("Product"))
+  if (isProduct) out.push(obj)
+  if (obj["@graph"]) collectProducts(obj["@graph"], out)
+}
+
+/**
+ * Reads schema.org/Product structured data (JSON-LD), the web standard many
+ * retailers embed for Google rich results. When present it yields a clean
+ * name, image, price, and description in one shot — the most reliable
+ * cross-site source, and often the only place a price is exposed.
+ */
+function extractJsonLd($: CheerioAPI): SiteExtract {
+  const products: Record<string, unknown>[] = []
+  $('script[type="application/ld+json"]').each((_, el) => {
+    const raw = $(el).contents().text()
+    if (!raw) return
+    try {
+      collectProducts(JSON.parse(raw), products)
+    } catch {
+      /* ignore malformed JSON-LD blocks */
+    }
+  })
+  const product = products.find((p) => typeof p.name === "string") ?? products[0]
+  if (!product) return {}
+  return {
+    title: typeof product.name === "string" ? product.name.trim() || null : null,
+    image: jsonLdImage(product.image),
+    price: jsonLdPrice(product.offers),
+    description:
+      typeof product.description === "string" ? product.description.trim() || null : null,
+  }
 }
 
 /** True for amazon.com and its regional domains, plus amzn.to short links. */
@@ -253,11 +329,13 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
     /* keep original host */
   }
   const site: SiteExtract = isAmazonHost(finalHost) ? extractAmazon($) : {}
+  const ld = extractJsonLd($)
 
   const meta = (selector: string) => $(selector).attr("content")?.trim()
 
   const title = firstText(
     site.title,
+    ld.title,
     meta('meta[property="og:title"]'),
     meta('meta[name="twitter:title"]'),
     meta('meta[name="title"]'),
@@ -267,6 +345,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
 
   const rawImage = firstText(
     site.image,
+    ld.image,
     meta('meta[property="og:image:secure_url"]'),
     meta('meta[property="og:image:url"]'),
     meta('meta[property="og:image"]'),
@@ -275,14 +354,17 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
     $('link[rel="image_src"]').attr("href")
   )
 
-  const description = firstText(
+  // Prefer the concise OG/meta description over JSON-LD's (often very long) one.
+  const rawDescription = firstText(
     meta('meta[property="og:description"]'),
     meta('meta[name="twitter:description"]'),
-    meta('meta[name="description"]')
+    meta('meta[name="description"]'),
+    ld.description
   )
 
   const rawPrice = firstText(
     site.price,
+    ld.price,
     meta('meta[property="product:price:amount"]'),
     meta('meta[property="og:price:amount"]'),
     meta('meta[itemprop="price"]'),
@@ -306,6 +388,13 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
     const match = rawPrice.replace(/,/g, "").match(/\d+(\.\d+)?/)
     if (match) price = match[0]
   }
+
+  // Cap description to the gift form's 1000-char limit so auto-fill never
+  // produces a value that fails validation on save.
+  const description =
+    rawDescription && rawDescription.length > 1000
+      ? rawDescription.slice(0, 997).trimEnd() + "…"
+      : rawDescription
 
   return { title, image_url, price, description }
 }
