@@ -19,6 +19,20 @@ export const inviteMemberSchema = z.object({
   email: z.string().email("Invalid email address"),
 })
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+})
+
+export const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
+
 export const giftSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().max(1000).optional(),
@@ -49,4 +63,6 @@ export type LoginInput = z.infer<typeof loginSchema>
 export type SignupInput = z.infer<typeof signupSchema>
 export type CreateFamilyInput = z.infer<typeof createFamilySchema>
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type GiftInput = z.infer<typeof giftSchema>
