@@ -11,6 +11,7 @@ export interface ScrapedGift {
 
 const FETCH_TIMEOUT_MS = 8000
 const MAX_BYTES = 2_000_000 // 2 MB cap on HTML we'll read
+const MAX_REDIRECTS = 5
 const USER_AGENT =
   "Mozilla/5.0 (compatible; FamilyGiftRegistryBot/1.0; +https://github.com/jpatrickb/family-gift-registry)"
 
@@ -93,6 +94,42 @@ export class ScrapeError extends Error {
     this.name = "ScrapeError"
     this.status = status
   }
+}
+
+/**
+ * Fetches `startUrl`, following redirects manually (rather than via fetch's
+ * built-in `redirect: "follow"`) so every hop can be re-validated through
+ * `assertSafeUrl`. A public URL that 302s to a private/loopback/metadata
+ * address would otherwise bypass the initial SSRF check entirely, since
+ * fetch's automatic redirect handling never re-runs it.
+ */
+async function fetchFollowingRedirects(
+  startUrl: URL,
+  signal: AbortSignal
+): Promise<{ res: Response; finalUrl: URL }> {
+  let current = startUrl
+  for (let i = 0; i <= MAX_REDIRECTS; i++) {
+    const res = await fetch(current, {
+      signal,
+      redirect: "manual",
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml",
+      },
+    })
+
+    const location = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null
+    if (!location) return { res, finalUrl: current }
+
+    let next: URL
+    try {
+      next = new URL(location, current)
+    } catch {
+      throw new ScrapeError("That site sent a broken redirect.", 502)
+    }
+    current = await assertSafeUrl(next.href)
+  }
+  throw new ScrapeError("Too many redirects.", 502)
 }
 
 /** Reads the response body up to MAX_BYTES, decoding as UTF-8 text. */
@@ -288,16 +325,11 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
   let res: Response
+  let finalUrl: URL
   try {
-    res = await fetch(url, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "text/html,application/xhtml+xml",
-      },
-    })
+    ;({ res, finalUrl } = await fetchFollowingRedirects(url, controller.signal))
   } catch (err) {
+    if (err instanceof ScrapeError) throw err
     if (err instanceof Error && err.name === "AbortError") {
       throw new ScrapeError("The site took too long to respond.", 504)
     }
@@ -322,13 +354,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   const $ = load(html)
 
   // Prefer the final (post-redirect) host so amzn.to short links are detected.
-  let finalHost = url.hostname
-  try {
-    if (res.url) finalHost = new URL(res.url).hostname
-  } catch {
-    /* keep original host */
-  }
-  const site: SiteExtract = isAmazonHost(finalHost) ? extractAmazon($) : {}
+  const site: SiteExtract = isAmazonHost(finalUrl.hostname) ? extractAmazon($) : {}
   const ld = extractJsonLd($)
 
   const meta = (selector: string) => $(selector).attr("content")?.trim()
@@ -376,7 +402,7 @@ export async function scrapeGift(rawUrl: string): Promise<ScrapedGift> {
   let image_url: string | null = null
   if (rawImage) {
     try {
-      image_url = new URL(rawImage, res.url || url.href).href
+      image_url = new URL(rawImage, finalUrl.href).href
     } catch {
       image_url = null
     }
