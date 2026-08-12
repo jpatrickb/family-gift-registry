@@ -31,7 +31,7 @@ export default async function MemberWishlistPage({ params, searchParams }: Param
 
   if (!profile) notFound()
 
-  let giftsQuery = supabase
+  const giftsQuery = supabase
     .from("gifts")
     .select("*, gift_claims(*)")
     .eq("owner_id", userId)

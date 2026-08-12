@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   if (userId && userId !== user.id) {
     // Viewing someone else's gifts — include claim data
-    let q = supabase
+    const q = supabase
       .from("gifts")
       .select("*, gift_claims(*)")
       .eq("owner_id", userId)
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     giftsError = result.error
   } else {
     // Viewing own gifts — no claim data
-    let q = supabase.from("gifts").select("*").eq("owner_id", user.id)
+    const q = supabase.from("gifts").select("*").eq("owner_id", user.id)
     const result = await q.order("sort_order", { ascending: true })
     giftsData = result.data
     giftsError = result.error
