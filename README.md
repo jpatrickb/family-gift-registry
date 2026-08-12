@@ -46,6 +46,28 @@ A web app for families to share wishlists and coordinate gift purchases without 
    npm run dev
    ```
 
+## Environments
+
+There are two Supabase projects:
+
+| Project | Used by | Purpose |
+|---|---|---|
+| **Staging** (`buimxvybpdgldzpocimp`) | Local dev, every Vercel Preview deployment | Where new migrations get tested first |
+| **Production** (`ohzsusvhkplmrgfjhmfw`) | `lumenlist.app` (Production deployments only) | Real user data |
+
+Vercel's `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_SERVICE_ROLE_KEY` are scoped per-environment (Preview → staging, Production → production) so PR preview URLs never touch real user data. `.env.local` should point at staging too.
+
+**Migration workflow** — always staging first, never write a migration straight to production:
+```bash
+supabase link --project-ref buimxvybpdgldzpocimp   # staging
+supabase db push
+# test it — locally and/or on a PR's preview deployment
+supabase link --project-ref ohzsusvhkplmrgfjhmfw   # production, only once verified
+supabase db push
+```
+
+The two projects can drift if a migration is applied to one and not the other — `supabase migration list --linked` (after linking to each) shows whether local, staging, and production agree.
+
 ## Codebase documentation
 
 See [`CODEBASE.md`](./CODEBASE.md) for a living description of the project structure, design decisions, and current state. This file is updated whenever changes are made to the app.
