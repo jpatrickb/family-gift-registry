@@ -17,6 +17,7 @@ export function GiftForm({ gift }: GiftFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [pasteUrl, setPasteUrl] = useState("")
+  const [scraping, setScraping] = useState(false)
   const isEditing = !!gift
 
   const form = useForm<GiftInput>({
@@ -29,6 +30,59 @@ export function GiftForm({ gift }: GiftFormProps) {
       image_url: gift?.image_url ?? "",
     },
   })
+
+  const imagePreview = form.watch("image_url")?.trim()
+
+  async function handleAutoFill() {
+    const url = pasteUrl.trim()
+    if (!url) return
+
+    // Ensure the URL has a scheme so the fetch and validation succeed.
+    const normalized = /^https?:\/\//i.test(url) ? url : `https://${url}`
+
+    setScraping(true)
+    try {
+      const res = await fetch("/api/gifts/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: normalized }),
+      })
+      const json = await res.json()
+
+      if (!res.ok) {
+        // Still drop the link into the URL field so nothing is lost.
+        form.setValue("url", normalized)
+        toast.error(json.error ?? "Couldn't read that page — enter details manually.")
+        return
+      }
+
+      const scraped = json.scraped as {
+        title: string | null
+        image_url: string | null
+        price: string | null
+        description: string | null
+      }
+
+      form.setValue("url", normalized)
+      if (scraped.title) form.setValue("title", scraped.title)
+      if (scraped.image_url) form.setValue("image_url", scraped.image_url)
+      if (scraped.price) form.setValue("price", scraped.price)
+      if (scraped.description && !form.getValues("description")) {
+        form.setValue("description", scraped.description)
+      }
+
+      if (scraped.title || scraped.image_url) {
+        toast.success("Filled in what we found — double-check before saving.")
+      } else {
+        toast.message("We couldn't find item details. Enter them manually below.")
+      }
+    } catch {
+      form.setValue("url", normalized)
+      toast.error("Couldn't reach that page — enter details manually.")
+    } finally {
+      setScraping(false)
+    }
+  }
 
   async function onSubmit(data: GiftInput) {
     setLoading(true)
@@ -74,16 +128,22 @@ export function GiftForm({ gift }: GiftFormProps) {
               placeholder="Paste a product URL — e.g. westelm.com/linen-throw"
               value={pasteUrl}
               onChange={(e) => setPasteUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  handleAutoFill()
+                }
+              }}
+              disabled={scraping}
             />
             <button
               type="button"
               className="ds-btn ds-btn-secondary ds-btn-sm"
-              onClick={() => {
-                if (pasteUrl.trim()) form.setValue("url", pasteUrl.trim())
-              }}
+              onClick={handleAutoFill}
+              disabled={scraping || !pasteUrl.trim()}
             >
               <LumenIcon name="sparkle" size={13} />
-              Auto-fill
+              {scraping ? "Fetching…" : "Auto-fill"}
             </button>
           </div>
           <div
@@ -184,6 +244,23 @@ export function GiftForm({ gift }: GiftFormProps) {
             placeholder="https://…"
             {...form.register("image_url")}
           />
+          {imagePreview && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={imagePreview}
+              alt="Preview"
+              onError={(e) => {
+                ;(e.currentTarget as HTMLImageElement).style.display = "none"
+              }}
+              style={{
+                marginTop: 10,
+                maxHeight: 120,
+                borderRadius: 8,
+                border: "1px solid var(--hairline)",
+                objectFit: "cover",
+              }}
+            />
+          )}
         </div>
 
         {/* Actions */}

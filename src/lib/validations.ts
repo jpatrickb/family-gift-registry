@@ -33,6 +33,13 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   })
 
+export const scrapeUrlSchema = z.object({
+  url: z
+    .string()
+    .min(1, "A URL is required")
+    .refine((val) => /^https?:\/\//i.test(val), "URL must start with http(s)://"),
+})
+
 export const giftSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().max(1000).optional(),
@@ -66,3 +73,4 @@ export type InviteMemberInput = z.infer<typeof inviteMemberSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type GiftInput = z.infer<typeof giftSchema>
+export type ScrapeUrlInput = z.infer<typeof scrapeUrlSchema>

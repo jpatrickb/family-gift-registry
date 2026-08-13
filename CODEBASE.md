@@ -138,6 +138,7 @@ Route groups:
 | `/api/families/[familyId]/invite` | POST | send Resend email invite |
 | `/api/families/[familyId]/members` | GET, DELETE | list or remove members |
 | `/api/gifts` | GET, POST | GET supports `?userId=` |
+| `/api/gifts/scrape` | POST | Server-side scrape of a product URL → `{ title, image_url, price, description }` (auth-gated, SSRF-guarded) |
 | `/api/gifts/[giftId]` | GET, PATCH, DELETE | |
 | `/api/gifts/[giftId]/claim` | POST, PATCH, DELETE | claim/unclaim/mark purchased |
 | `/api/invite/[token]` | POST | accept email invite (uses admin client) |
@@ -156,6 +157,7 @@ Route groups:
 | `src/lib/supabase/admin.ts` | Service role client — bypasses RLS; server-only |
 | `src/lib/supabase/middleware.ts` | Supabase client for middleware (reads/writes cookies on req/res) |
 | `src/lib/resend.ts` | Resend email sender — invite, signup confirmation, already-registered notice, password reset. All sends go through a shared `send()` helper that throws on failure (Resend's SDK returns `{data,error}` rather than throwing, so callers must check) |
+| `src/lib/scrape.ts` | Server-only product-page scraper: SSRF guard + Open Graph/Twitter/meta-tag extraction via `cheerio` |
 | `src/lib/validations.ts` | Zod schemas for all forms |
 | `src/components/auth/confirm-client.tsx` | Client component behind `/confirm` — parses the implicit-flow tokens out of the URL fragment and calls `setSession()` |
 | `src/components/auth/forgot-password-form.tsx` | Form for `/forgot-password` |
@@ -191,6 +193,20 @@ Route groups:
 
 **Why dashboard greeting is client-rendered**: The greeting period (morning/afternoon/evening) is computed in a Client Component so it reflects the viewer's local time rather than the server timezone.
 
+**Why URL scraping runs server-side**: The "Auto-fill" bar on the add-gift form posts the pasted URL to `/api/gifts/scrape`, which fetches the page server-side (browser fetches are CORS-blocked on most retail sites) and extracts details with `cheerio`. The route guards against SSRF by resolving the hostname and rejecting loopback/private/link-local/cloud-metadata addresses, and caps fetch time (8s) and body size (2 MB).
+
+**Scraper extraction chain** (`scrapeGift`): sources are tried in priority order and the first hit wins, so coverage degrades gracefully:
+1. **Site-specific** — Amazon DOM extraction (see below).
+2. **JSON-LD** (`schema.org/Product`) — the web standard retailers embed for Google rich results. Yields a clean name, image, price, and description in one shot, and is often the *only* place a price is exposed (e.g. Uncommon Goods). Parsed from all `<script type="application/ld+json">` blocks, walking `@graph` and arrays; malformed blocks are ignored.
+3. **Open Graph / Twitter / standard meta tags** — name, image, description, and `product:price:amount`.
+4. **`<title>` / `<h1>`** — last-resort title.
+
+Scraping is best-effort. Empirically, common sites fall into three buckets: (a) good structured data → name+image+price work; (b) reachable but JS-rendered (Nike, Allbirds, Target) → name+image only, price is JS-loaded and absent from initial HTML; (c) **hard-blocked** (Etsy, REI, West Elm, Best Buy, etc.) → return 403/429/503 to datacenter-IP requests regardless of User-Agent, so nothing is extracted. In every partial/failure case the form falls back to manual entry (the pasted link is still saved). Defeating bucket (c) or getting price from bucket (b) would require a headless browser and/or residential-IP proxy or a paid scraping API — deliberately out of scope. Scraped descriptions are capped at 1000 chars to satisfy the gift form's validation.
+
+**Why Amazon has a dedicated extractor**: Amazon is the most common source, but its product pages ship generic/empty Open Graph tags ("Amazon" title, logo image) while the real data lives in the DOM. `scrapeGift` detects Amazon hosts (`amazon.*`, `amzn.*`, matched against the post-redirect host so `amzn.to` short links work) and reads the title from `#productTitle` and the image from `#landingImage`'s `data-old-hires` / `data-a-dynamic-image` (largest variant). These site-specific values take priority over the generic meta-tag fallback. **Amazon price is not scrapable** from the initial HTML — it's lazy-loaded via a later AJAX call — so price comes back empty on Amazon and the user enters it manually. Server-side fetches with our bot User-Agent currently receive the full product page (not the captcha variant); if that changes, title/image will degrade to empty and fall back to manual entry.
+
+**Why `images.unoptimized` is set**: Scraped product images come from arbitrary retailer domains that can't be predicted, so a `remotePatterns` allowlist would be too brittle. `next.config.ts` sets `images.unoptimized: true` so `next/image` serves any external image as-is (Next otherwise `400`s images from unconfigured hosts). Trade-off: Next's image optimizer/proxy is skipped for all images.
+
 **Why `is_family_member()` exists**: querying `family_members` inside the `family_members` SELECT policy caused PostgreSQL RLS recursion (`infinite recursion detected in policy for relation "family_members"`). The SECURITY DEFINER helper lets policies check membership without recursive policy evaluation.
 
 **Why `/api/families` calls `create_family()`**: creating a family with `insert(...).select().single()` can fail under RLS because the immediate read-back depends on membership visibility timing. The RPC creates the family and owner membership in one privileged function and returns the new `family_id` directly.
@@ -225,5 +241,5 @@ Covers 8 sections across ~35 scenarios: auth, family management, invite flows, g
 
 ## Planned / future features
 
-- Chrome extension to scrape gift details from product pages (schema has `source` and `external_id` columns ready)
+- Chrome extension to scrape gift details from product pages (schema has `source` and `external_id` columns ready). Note: server-side URL scraping now exists via `/api/gifts/scrape` (see "Why URL scraping runs server-side"); a Chrome extension would still help on sites that block server-side fetches.
 - Google Sheets sync (same columns)
