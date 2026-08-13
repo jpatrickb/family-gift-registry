@@ -19,6 +19,13 @@ export const inviteMemberSchema = z.object({
   email: z.string().email("Invalid email address"),
 })
 
+export const scrapeUrlSchema = z.object({
+  url: z
+    .string()
+    .min(1, "A URL is required")
+    .refine((val) => /^https?:\/\//i.test(val), "URL must start with http(s)://"),
+})
+
 export const giftSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().max(1000).optional(),
@@ -50,3 +57,4 @@ export type SignupInput = z.infer<typeof signupSchema>
 export type CreateFamilyInput = z.infer<typeof createFamilySchema>
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>
 export type GiftInput = z.infer<typeof giftSchema>
+export type ScrapeUrlInput = z.infer<typeof scrapeUrlSchema>
