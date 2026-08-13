@@ -213,16 +213,18 @@ Scraping is best-effort. Empirically, common sites fall into three buckets: (a) 
 
 **Why `create_family()` now upserts `profiles`**: older users can exist in `auth.users` without a corresponding `public.profiles` row, which causes `families.created_by` foreign-key failures. The function now guarantees the caller profile exists before inserting a family.
 
+**Why there's a separate staging Supabase project**: local dev, and every Vercel Preview deployment (i.e. every open PR) previously pointed at the same database as production — a migration or a test signup on a PR branch touched real user data. `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_SERVICE_ROLE_KEY` are now scoped per-Vercel-environment (Preview → staging project `buimxvybpdgldzpocimp`, Production → production project `ohzsusvhkplmrgfjhmfw`); `.env.local` points at staging too. Migrations should always be applied to staging first (see README's "Environments" section) — the two projects are not auto-synced and can drift if a migration is only applied to one.
+
 ---
 
 ## Environment variables
 
 | Variable | Used by |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | All Supabase clients |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser + server clients |
-| `SUPABASE_SERVICE_ROLE_KEY` | Admin client (invite acceptance routes) |
-| `RESEND_API_KEY` | Email invite sending |
+| `NEXT_PUBLIC_SUPABASE_URL` | All Supabase clients — differs per environment (staging for local dev + Preview, production for Production; see "Why there's a separate staging Supabase project") |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser + server clients — differs per environment |
+| `SUPABASE_SERVICE_ROLE_KEY` | Admin client (invite acceptance, auth email routes) — differs per environment |
+| `RESEND_API_KEY` | Email sending (invites, signup confirmation, password reset) |
 | `RESEND_FROM_EMAIL` | Resend sender identity for app emails |
 | `NEXT_PUBLIC_APP_URL` | Invite link generation |
 | `AUTH_DEBUG` | Optional server-side auth/invite diagnostics in logs |
