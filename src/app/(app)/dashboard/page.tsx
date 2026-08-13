@@ -213,7 +213,7 @@ export default async function DashboardPage() {
               style={{ padding: "32px 24px", textAlign: "center" }}
             >
               <div className="t-body-sm" style={{ color: "var(--ink-3)" }}>
-                You haven't joined any families yet.
+                You haven&apos;t joined any families yet.
               </div>
               <Link href="/families/new" className="ds-btn ds-btn-primary ds-btn-sm" style={{ marginTop: 14, display: "inline-flex" }}>
                 Create your first family
@@ -325,7 +325,7 @@ export default async function DashboardPage() {
           {claims.length === 0 ? (
             <div className="ds-card" style={{ padding: "24px 18px", textAlign: "center" }}>
               <div className="t-body-sm" style={{ color: "var(--ink-3)" }}>
-                You haven't claimed any gifts yet.
+                You haven&apos;t claimed any gifts yet.
               </div>
               {families.length > 0 && (
                 <Link

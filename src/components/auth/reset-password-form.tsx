@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
@@ -17,35 +16,31 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { loginSchema, type LoginInput } from "@/lib/validations"
+import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/validations"
 
-export function LoginForm() {
+export function ResetPasswordForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+  const form = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: { password: "", confirmPassword: "" },
   })
 
-  async function onSubmit(data: LoginInput) {
+  async function onSubmit(data: ResetPasswordInput) {
     setLoading(true)
     setSubmitError(null)
     const supabase = getSupabaseBrowserClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    const { error } = await supabase.auth.updateUser({ password: data.password })
     if (error) {
       toast.error(error.message)
       setSubmitError(error.message)
       setLoading(false)
       return
     }
-    const next = searchParams.get("next") ?? "/dashboard"
-    router.replace(next)
+    toast.success("Password updated.")
+    router.replace("/dashboard")
     router.refresh()
   }
 
@@ -54,12 +49,12 @@ export function LoginForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="email"
+          name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>New password</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="you@example.com" {...field} />
+                <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,15 +62,10 @@ export function LoginForm() {
         />
         <FormField
           control={form.control}
-          name="password"
+          name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel>Password</FormLabel>
-                <Link href="/forgot-password" className="text-sm font-medium underline">
-                  Forgot password?
-                </Link>
-              </div>
+              <FormLabel>Confirm password</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -84,7 +74,7 @@ export function LoginForm() {
           )}
         />
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? "Updating…" : "Update password"}
         </Button>
         {submitError && (
           <p className="text-sm text-red-600" role="alert">
